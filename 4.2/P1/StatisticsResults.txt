@@ -1,0 +1,11 @@
+=== Descriptive Statistics ===
+
+Metric                  |        Value
+------------------------+-------------
+Count                   |          399
+Mean                    |  241.9122807
+Median                  |          239
+Mode                    |   [170, 393]
+Population Std Dev      |  145.2112447
+Sample Variance         |  21139.28626
+Elapsed Time (seconds)  |    0.0015292
