@@ -10,7 +10,7 @@ Population Std Dev      |  145.2581068
 Population Variance     |   21099.9176
 Sample Std Dev          |   145.440021
 Sample Variance         |   21152.7996
-Elapsed Time (seconds)  |    0.0010012
+Elapsed Time (seconds)  |    0.0011995
 
 === Descriptive Statistics (tests/TC2.txt) ===
 
@@ -24,7 +24,7 @@ Population Std Dev      |   144.1713187
 Population Variance     |  20785.369132
 Sample Std Dev          |    144.207795
 Sample Variance         |   20795.88804
-Elapsed Time (seconds)  |     0.0042109
+Elapsed Time (seconds)  |     0.0043556
 
 === Descriptive Statistics (tests/TC3.txt) ===
 
@@ -38,7 +38,7 @@ Population Std Dev      |   145.3178498
 Population Variance     |  21117.277473
 Sample Std Dev          |    145.323606
 Sample Variance         |   21118.95039
-Elapsed Time (seconds)  |     0.0246403
+Elapsed Time (seconds)  |     0.0254481
 
 === Descriptive Statistics (tests/TC4.txt) ===
 
@@ -52,21 +52,21 @@ Population Std Dev      |   130.4144196
 Population Variance     |  17007.920843
 Sample Std Dev          |    130.419585
 Sample Variance         |   17009.26822
-Elapsed Time (seconds)  |     0.0213135
+Elapsed Time (seconds)  |     0.0217848
 
 === Descriptive Statistics (tests/TC5.txt) ===
 
-Metric                  |                                                                                        Value
-------------------------+---------------------------------------------------------------------------------------------
-Count                   |                                                                                          311
-Mean                    |                                                                                  238.4644695
-Median                  |                                                                                          240
-Mode                    |  [0, 11, 19, 46, 56, 64, 76, 96, 166, 170, 211, 215, 268, 277, 278, 290, 368, 375, 393, 466]
-Population Std Dev      |                                                                                  146.9494041
-Population Variance     |                                                                                 21594.127363
-Sample Std Dev          |                                                                                   147.186228
-Sample Variance         |                                                                                  21663.78584
-Elapsed Time (seconds)  |                                                                                    0.0006948
+Metric                  |                                                                                     Value
+------------------------+------------------------------------------------------------------------------------------
+Count                   |                                                                                       311
+Mean                    |                                                                                241.495114
+Median                  |                                                                                       241
+Mode                    |  [11, 19, 46, 56, 64, 76, 96, 166, 170, 211, 215, 268, 277, 278, 290, 368, 375, 393, 466]
+Population Std Dev      |                                                                               145.4648479
+Population Variance     |                                                                              21160.021963
+Sample Std Dev          |                                                                                145.702342
+Sample Variance         |                                                                               21229.17236
+Elapsed Time (seconds)  |                                                                                 0.0007543
 
 === Descriptive Statistics (tests/TC6.txt) ===
 
@@ -80,22 +80,22 @@ Population Std Dev      |                      107382050173809983488
 Population Variance     |  11530904699530646862954721780958962384896
 Sample Std Dev          |                      107399951657667592192
 Sample Variance         |  11534749616069338239761958751339425038336
-Elapsed Time (seconds)  |                                  0.0056706
+Elapsed Time (seconds)  |                                  0.0056274
 
 === Descriptive Statistics (tests/TC7.txt) ===
 
 Metric                  |                                      Value
 ------------------------+-------------------------------------------
 Count                   |                                      12769
-Mean                    |                      247428634845709139968
-Median                  |                      246611679700462993408
-Mode                    |                                          0
-Population Std Dev      |                      144627481479776206848
-Population Variance     |  20917108399183012013060341523195031977984
-Sample Std Dev          |                      144633145039055486976
-Sample Variance         |  20918746643888462151608408114097815552000
-Elapsed Time (seconds)  |                                   0.021955
+Mean                    |                      247467395499714904064
+Median                  |                      246640973074290016256
+Mode                    |                                       #N/A
+Population Std Dev      |                      144605647009847050240
+Population Variance     |  20910793147136483762414542324695312629760
+Sample Std Dev          |                      144611310601233137664
+Sample Variance         |  20912431153806321107417444778947884613632
+Elapsed Time (seconds)  |                                  0.0232578
 
 === Batch Summary ===
 Files processed: 7
-Total elapsed time (seconds): 0.079608
+Total elapsed time (seconds): 0.082572

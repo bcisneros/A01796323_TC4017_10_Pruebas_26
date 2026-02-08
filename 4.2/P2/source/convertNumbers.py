@@ -149,7 +149,7 @@ H_BIN = "Binary"
 H_HEX = "Hex"
 
 
-def build_aligned_table(rows, elapsed_seconds):
+def build_aligned_table(rows, elapsed_seconds, input_path):
     """
     Build an aligned text table for the given rows.
 
@@ -157,6 +157,7 @@ def build_aligned_table(rows, elapsed_seconds):
         rows (list[tuple[str, str, str, str]]):
             Each tuple is (line_str, decimal_str, bin_str, hex_str)
         elapsed_seconds (float): total elapsed time to print at the end.
+        input_path (str): path to the input file.
 
     Returns:
         str: the full table ready to print/write.
@@ -197,7 +198,7 @@ def build_aligned_table(rows, elapsed_seconds):
     )
 
     lines = []
-    line_header = "=== Conversions (Line, Decimal → Binary, Hex) ==="
+    line_header = f"=== {input_path} Conversions (Line, Decimal → Binary, Hex) ==="
     lines.append(line_header)
     lines.append("")
     lines.append(header)
@@ -257,7 +258,7 @@ def main():
     if len(line_value_pairs) == 0:
         elapsed = time.perf_counter() - start_time
         lines = [
-            "=== Number Base Conversions (Line, Decimal → Binary, Hex) ===",
+            f"=== {input_path} Number Base Conversions (Line, Decimal → Binary, Hex) ===",
             "",
             "Total valid items: 0",
             "(no valid integers to convert)",
@@ -273,10 +274,10 @@ def main():
     rows = prepare_rows(line_value_pairs)
     elapsed = time.perf_counter() - start_time
 
-    output = build_aligned_table(rows, elapsed)
+    output = build_aligned_table(rows, elapsed, input_path)
 
     print(output)
-    write_results("ConvertionResults.txt", output)
+    write_results("results/ConvertionResults.txt", output)
 
 
 if __name__ == "__main__":

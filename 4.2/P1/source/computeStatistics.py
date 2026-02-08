@@ -62,7 +62,7 @@ def process_line(numbers, line_no, line):
                 f"[ERROR] Invalid token at line {line_no}: '{token}'",
                 file=sys.stderr,
             )
-            numbers.append(0.0)  # Treat invalid tokens as zero for statistics
+            numbers.append(None)  # Treat invalid tokens as zero for statistics
 
 
 def merge(left, right):
@@ -321,15 +321,16 @@ def compute_all_statistics(data):
     if result["count"] == 0:
         return result
 
-    sorted_data = merge_sort(data)
-    mean_value = compute_mean(data)
+    clean_data = [x for x in data if x is not None]
+    sorted_data = merge_sort(clean_data)
+    mean_value = compute_mean(clean_data)
     median_value = compute_median(sorted_data)
-    modes = compute_mode(data)
+    modes = compute_mode(clean_data)
 
-    var_pop = compute_variance_population(data, mean_value)
+    var_pop = compute_variance_population(clean_data, mean_value)
     std_pop = sqrt_newton(var_pop) if var_pop is not None else None
 
-    var_sam = compute_variance_sample(data, mean_value)
+    var_sam = compute_variance_sample(clean_data, mean_value)
     std_sam = sqrt_newton(var_sam) if var_sam is not None else None
 
     result["mean"] = mean_value
