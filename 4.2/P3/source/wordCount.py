@@ -20,7 +20,7 @@ Usage:
 
 import sys
 import time
-
+import os
 
 def to_lower(s):
     """Return a lowercase version of the string (basic normalization)."""
@@ -238,9 +238,21 @@ def build_aligned_table(pairs, total_valid, elapsed_seconds):
 
     sep = "  |  "
     left = header_word.ljust(word_width)
-    header = header_number.rjust(number_width) + sep + left + sep + header_count.rjust(count_width)
+    header = (
+        header_number.rjust(number_width)
+        + sep
+        + left
+        + sep
+        + header_count.rjust(count_width)
+    )
     new_sep = sep.replace("|", "+").replace(" ", "-")
-    rule = "-" * number_width + new_sep + "-" * word_width + new_sep + "-" * count_width
+    rule = (
+        "-" * number_width
+        + new_sep
+        + "-" * word_width
+        + new_sep
+        + "-" * count_width
+    )
 
     lines = []
     lines.append("")
@@ -248,7 +260,13 @@ def build_aligned_table(pairs, total_valid, elapsed_seconds):
     lines.append(rule)
 
     for i, (w, c) in enumerate(pairs, start=1):
-        line = str(i).rjust(number_width) + sep + w.ljust(word_width) + sep + str(c).rjust(count_width)
+        line = (
+            str(i).rjust(number_width)
+            + sep
+            + w.ljust(word_width)
+            + sep
+            + str(c).rjust(count_width)
+        )
         lines.append(line)
 
     lines.append("")
@@ -272,10 +290,13 @@ def build_file_section(input_path, words, elapsed_seconds):
     # Sort: count DESC, word ASC
     sorted_pairs = merge_sort_pairs(pairs)
 
-    section_body = build_aligned_table(sorted_pairs, len(words), elapsed_seconds)
+    section_body = build_aligned_table(
+        sorted_pairs, len(words), elapsed_seconds
+    )
 
     # Add a file-specific title
-    header = f"=== {input_path} — Word Count (Distinct Words & Frequencies) ===\n"
+    title = "Word Count (Distinct Words & Frequencies)"
+    header = f"=== {input_path} — {title} ===\n"
     return header + section_body
 
 def main():
@@ -285,7 +306,7 @@ def main():
     """
     if len(sys.argv) < 2:
         print(
-            "Usage:\n  python wordCount.py file1.txt [file2.txt ... fileN.txt]",
+            "Usage:\n  python wordCount.py f1.txt [f2.txt ... fN.txt]",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -298,21 +319,20 @@ def main():
         start_time = time.perf_counter()
         try:
             words = parse_words_from_file(input_path)
-        except SystemExit:
-            # parse_words_from_file calls sys.exit(1) on fatal; to keep the batch running:
-            # re-raise would stop the entire batch; instead, just continue
-            # (If you prefer to enforce an exit on fatal, remove this block.)
-            continue
-        except Exception as exc:  # extra safety
-            print(f"[FATAL] Unexpected error reading '{input_path}': {exc}", file=sys.stderr)
+        except IOError as exc:
+            print(
+                f"[FATAL] Unexpected error reading '{input_path}': {exc}",
+                file=sys.stderr
+            )
             continue
 
         elapsed = time.perf_counter() - start_time
 
         # If no valid words, print an empty section with totals = 0
+        title = "Word Count (Distinct Words & Frequencies)"
         if len(words) == 0:
             lines = [
-                f"=== {input_path} — Word Count (Distinct Words & Frequencies) ===",
+                f"=== {input_path} — {title} ===",
                 "",
                 "Word             |  Frequency",
                 "-----------------+-----------",
@@ -343,10 +363,12 @@ def main():
     combined_report = "\n".join(all_sections) + footer
 
     try:
-        import os
         os.makedirs("results", exist_ok=True)
-    except Exception as exc:
-        print(f"[WARN] Could not ensure 'results/' directory: {exc}", file=sys.stderr)
+    except FileExistsError as exc:
+        print(
+            f"[WARN] Could not ensure 'results/' directory: {exc}",
+            file=sys.stderr
+        )
 
     write_results("results/WordCountResults.txt", combined_report)
 
