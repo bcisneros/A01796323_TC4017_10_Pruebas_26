@@ -20,6 +20,70 @@ Usage:
 import sys
 import time
 
+def pow_int(base, exp):
+    """Compute base**exp using integer multiplications (no math.pow)."""
+    result = 1
+    for _ in range(exp):
+        result *= base
+    return result
+
+
+def to_base_string_positive(n, base):
+    """
+    Convert a NON-NEGATIVE integer n to base (2 or 16) without leading zeros.
+    Uses the same repeated-division approach as to_base_string, but assumes n >= 0.
+    """
+    if n == 0:
+        return "0"
+    digits_map = "0123456789ABCDEF"
+    chars = []
+    while n > 0:
+        n, rem = divmod(n, base)
+        chars.append(digits_map[rem])
+    chars.reverse()
+    return "".join(chars)
+
+
+def twos_complement_bin(value, bits=10):
+    """
+    Return a fixed-width two's-complement binary string for 'value' using 'bits' bits.
+    Example: value=-39, bits=10 -> '1111011001'
+    """
+    if bits <= 0:
+        return "0"
+    modulus = pow_int(2, bits)          # 2^bits
+    if value >= 0:
+        # For non-negative numbers, follow the expected (no padding with leading zeros)
+        return to_base_string_positive(value, 2)
+    # Two's-complement representation in 'bits'
+    m = value % modulus                  # Python % yields a non-negative remainder
+    s = to_base_string_positive(m, 2)
+    # Ensure EXACTLY 'bits' bits for negatives
+    if len(s) < bits:
+        s = ("0" * (bits - len(s))) + s
+    return s
+
+
+def twos_complement_hex(value, hex_width=10):
+    """
+    Return a fixed-width two's-complement HEX string (uppercase) for 'value'
+    using 'hex_width' hexadecimal digits (i.e., 4*hex_width bits).
+    Example: value=-39, hex_width=10 -> 'FFFFFFFFD9'
+    """
+    if hex_width <= 0:
+        return "0"
+    modulus = pow_int(16, hex_width)     # 16^hex_width == 2^(4*hex_width)
+    if value >= 0:
+        # For non-negative numbers, follow the expected (no padding with leading zeros)
+        return to_base_string_positive(value, 16)
+    # Two's-complement representation in 'hex_width' hex digits
+    m = value % modulus                  # non-negative remainder in range [0, 16^hex_width)
+    s = to_base_string_positive(m, 16)
+    # Left-pad with zeros to reach exact width (for negatives, digits will naturally start with 'F' when needed)
+    if len(s) < hex_width:
+        s = ("0" * (hex_width - len(s))) + s
+    return s
+
 
 def parse_int_token(token):
     """
@@ -129,6 +193,7 @@ def process_tokens(items, line_no, tokens):
                 f"[ERROR] Invalid token at line {line_no}: '{token}'",
                 file=sys.stderr,
             )
+            items.append((line_no, token))
         else:
             items.append((line_no, num))
 
@@ -225,7 +290,12 @@ def build_aligned_table(rows, elapsed_seconds, input_path):
 
 def prepare_rows(line_value_pairs):
     """
-    Convert line-value pairs to table rows using basic algorithms.
+    Convert (line_no, value) to table rows using basic algorithms.
+    For negatives:
+      - BIN: two's complement, 10 bits (e.g., -39 -> 1111011001)
+      - HEX: two's complement, 10 hex digits (40 bits) (e.g., -39 -> FFFFFFFFD9)
+    For non-negatives:
+      - BIN/HEX: standard conversion without sign/padding.
     Returns:
         list[tuple[str, str, str, str]]
     """
@@ -233,51 +303,89 @@ def prepare_rows(line_value_pairs):
     for line_no, value in line_value_pairs:
         line_str = str(line_no)
         dec_str = str(value)
-        bin_str = to_base_string(value, 2)
-        hex_str = to_base_string(value, 16)
+
+        if value is None or not isinstance(value, int):
+            bin_str = "#VALUE!"
+            hex_str = "#VALUE!"
+        else:
+            if value < 0:
+                bin_str = twos_complement_bin(value, bits=10)
+                hex_str = twos_complement_hex(value, hex_width=10)
+            else:
+                bin_str = to_base_string(value, 2)
+                hex_str = to_base_string(value, 16)
+
         rows.append((line_str, dec_str, bin_str, hex_str))
     return rows
 
 
 def main():
     """
-    Entry point: parse integers, convert to bases, and print aligned results.
+    Entry point: accept one or multiple input files, convert integers to bases
+    per file, and print/write one combined report at the end.
     """
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print(
-            "Usage:\n  python convertNumbers.py fileWithData.txt",
+            "Usage:\n  python convertNumbers.py file1.txt [file2.txt ... fileN.txt]",
             file=sys.stderr,
         )
         sys.exit(2)
 
-    input_path = sys.argv[1]
-    start_time = time.perf_counter()
+    input_paths = sys.argv[1:]
+    all_sections = []
+    overall_start = time.perf_counter()
 
-    line_value_pairs = parse_integers_from_file(input_path)
+    for input_path in input_paths:
+        start_time = time.perf_counter()
 
-    if len(line_value_pairs) == 0:
+        try:
+            line_value_pairs = parse_integers_from_file(input_path)
+        except OSError as exc:
+            print(f"[FATAL] Cannot read file '{input_path}': {exc}", file=sys.stderr)
+            # continue with the next file instead of aborting the batch
+            continue
+
+        if len(line_value_pairs) == 0:
+            elapsed = time.perf_counter() - start_time
+            lines = [
+                f"=== {input_path} Number Base Conversions (Line, Decimal → Binary, Hex) ===",
+                "",
+                "Total valid items: 0",
+                "(no valid integers to convert)",
+                "",
+                f"Elapsed Time (seconds): {elapsed:.6f}",
+                "",
+            ]
+            section = "\n".join(lines)
+            print(section)
+            all_sections.append(section)
+            continue
+
+        rows = prepare_rows(line_value_pairs)
         elapsed = time.perf_counter() - start_time
-        lines = [
-            f"=== {input_path} Number Base Conversions (Line, Decimal → Binary, Hex) ===",
-            "",
-            "Total valid items: 0",
-            "(no valid integers to convert)",
-            "",
-            f"Elapsed Time (seconds): {elapsed:.6f}",
-            "",
-        ]
-        output = "\n".join(lines)
-        print(output)
-        write_results("ConvertionResults.txt", output)
-        return
 
-    rows = prepare_rows(line_value_pairs)
-    elapsed = time.perf_counter() - start_time
+        # Build the section for this input file (keeps your table format)
+        section = build_aligned_table(rows, elapsed, input_path)
+        print(section)
+        all_sections.append(section)
 
-    output = build_aligned_table(rows, elapsed, input_path)
+    if not all_sections:
+        print("[ERROR] No valid inputs were processed.", file=sys.stderr)
+        sys.exit(1)
 
-    print(output)
-    write_results("results/ConvertionResults.txt", output)
+    # Optional batch summary footer
+    overall_elapsed = time.perf_counter() - overall_start
+    footer = (
+        "\n=== Batch Summary ===\n"
+        f"Files processed: {len(all_sections)}\n"
+        f"Total elapsed time (seconds): {overall_elapsed:.6f}\n"
+    )
+
+    # Join all file sections into a single combined report
+    combined_report = "\n".join(all_sections) + footer
+
+    # Single write at the end
+    write_results("results/ConvertionResults.txt", combined_report)
 
 
 if __name__ == "__main__":
