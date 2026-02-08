@@ -38,7 +38,7 @@ def parse_numbers_from_file(path):
         with open(path, "r", encoding="utf-8") as fh:
             for line_no, raw in enumerate(fh, start=1):
                 # Support commas and whitespace as separators
-                line = raw # .replace(",", " ")
+                line = raw  # .replace(",", " ")
                 process_line(numbers, line_no, line)
     except FileNotFoundError:
         print(f"[FATAL] File not found: {path}", file=sys.stderr)
@@ -375,14 +375,22 @@ def prepare_mode_string(count, modes):
         return "[" + ", ".join(parts) + "]"
     return "#N/A"
 
+
 def main():
     """
-    Entry point: accept one or multiple input files, compute statistics per file,
-    print all results, and write one combined report at the end.
+    Entry point: 
+        - accept one or multiple input files
+        - compute statistics per file
+        - print all results
+        - write one combined report at the end
     """
     if len(sys.argv) < 2:
+        usage = """
+        Usage:\n  
+        python computeStatistics.py file1.txt [file2.txt ... fileN.txt]
+        """
         print(
-            "Usage:\n  python computeStatistics.py file1.txt [file2.txt ... fileN.txt]",
+            usage,
             file=sys.stderr,
         )
         sys.exit(2)
@@ -397,7 +405,10 @@ def main():
         try:
             data = parse_numbers_from_file(input_path)
         except OSError as exc:
-            print(f"[FATAL] Cannot read file '{input_path}': {exc}", file=sys.stderr)
+            print(
+                f"[FATAL] Cannot read file '{input_path}': {exc}",
+                file=sys.stderr
+            )
             # Keep going with next files
             continue
 
@@ -430,6 +441,7 @@ def main():
     # Output to console and single results file (overwrite)
     print(combined_report)
     write_results("results/StatisticsResults.txt", combined_report)
+
 
 if __name__ == "__main__":
     main()

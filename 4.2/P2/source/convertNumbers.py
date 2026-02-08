@@ -31,7 +31,7 @@ def pow_int(base, exp):
 def to_base_string_positive(n, base):
     """
     Convert a NON-NEGATIVE integer n to base (2 or 16) without leading zeros.
-    Uses the same repeated-division approach as to_base_string, but assumes n >= 0.
+    Uses the same repeated-division approach as to_base_string, assumes n >= 0.
     """
     if n == 0:
         return "0"
@@ -46,17 +46,19 @@ def to_base_string_positive(n, base):
 
 def twos_complement_bin(value, bits=10):
     """
-    Return a fixed-width two's-complement binary string for 'value' using 'bits' bits.
+    Return a fixed-width 2-complement binary string for 'value'
+    using 'bits' bits.
     Example: value=-39, bits=10 -> '1111011001'
     """
     if bits <= 0:
         return "0"
     modulus = pow_int(2, bits)          # 2^bits
     if value >= 0:
-        # For non-negative numbers, follow the expected (no padding with leading zeros)
+        # For non-negative numbers,
+        # follow the expected (no padding with leading zeros)
         return to_base_string_positive(value, 2)
     # Two's-complement representation in 'bits'
-    m = value % modulus                  # Python % yields a non-negative remainder
+    m = value % modulus
     s = to_base_string_positive(m, 2)
     # Ensure EXACTLY 'bits' bits for negatives
     if len(s) < bits:
@@ -74,12 +76,14 @@ def twos_complement_hex(value, hex_width=10):
         return "0"
     modulus = pow_int(16, hex_width)     # 16^hex_width == 2^(4*hex_width)
     if value >= 0:
-        # For non-negative numbers, follow the expected (no padding with leading zeros)
+        # For non-negative numbers,
+        # follow the expected (no padding with leading zeros)
         return to_base_string_positive(value, 16)
     # Two's-complement representation in 'hex_width' hex digits
-    m = value % modulus                  # non-negative remainder in range [0, 16^hex_width)
+    m = value % modulus
     s = to_base_string_positive(m, 16)
-    # Left-pad with zeros to reach exact width (for negatives, digits will naturally start with 'F' when needed)
+    # Left-pad with zeros to reach exact width
+    # (for negatives, digits will naturally start with 'F' when needed)
     if len(s) < hex_width:
         s = ("0" * (hex_width - len(s))) + s
     return s
@@ -263,7 +267,9 @@ def build_aligned_table(rows, elapsed_seconds, input_path):
     )
 
     lines = []
-    line_header = f"=== {input_path} Conversions (Line, Decimal → Binary, Hex) ==="
+    line_header = (
+        f"=== {input_path} Conversions (Line, Decimal → Binary, Hex) ==="
+    )
     lines.append(line_header)
     lines.append("")
     lines.append(header)
@@ -293,7 +299,8 @@ def prepare_rows(line_value_pairs):
     Convert (line_no, value) to table rows using basic algorithms.
     For negatives:
       - BIN: two's complement, 10 bits (e.g., -39 -> 1111011001)
-      - HEX: two's complement, 10 hex digits (40 bits) (e.g., -39 -> FFFFFFFFD9)
+      - HEX: two's complement, 10 hex digits (40 bits)
+        (e.g., -39 -> FFFFFFFFD9)
     For non-negatives:
       - BIN/HEX: standard conversion without sign/padding.
     Returns:
@@ -325,8 +332,11 @@ def main():
     per file, and print/write one combined report at the end.
     """
     if len(sys.argv) < 2:
+        usage = """
+            Usage:\n  python convertNumbers.py file1.txt [file2.txt ... fileN.txt]
+            """
         print(
-            "Usage:\n  python convertNumbers.py file1.txt [file2.txt ... fileN.txt]",
+            usage,
             file=sys.stderr,
         )
         sys.exit(2)
@@ -341,14 +351,20 @@ def main():
         try:
             line_value_pairs = parse_integers_from_file(input_path)
         except OSError as exc:
-            print(f"[FATAL] Cannot read file '{input_path}': {exc}", file=sys.stderr)
+            print(
+                f"[FATAL] Cannot read file '{input_path}': {exc}",
+                file=sys.stderr
+            )
             # continue with the next file instead of aborting the batch
             continue
+
+
+        title = f"=== {input_path} Conversions (Line, Decimal → Bin, Hex) ==="
 
         if len(line_value_pairs) == 0:
             elapsed = time.perf_counter() - start_time
             lines = [
-                f"=== {input_path} Number Base Conversions (Line, Decimal → Binary, Hex) ===",
+                title,
                 "",
                 "Total valid items: 0",
                 "(no valid integers to convert)",
