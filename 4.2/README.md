@@ -25,6 +25,79 @@ The assignment focuses on:
 - Applying recognized industry coding standards.
 - Running and documenting all test cases for the three programs.
 
+## Project Content
+
+```
+.
+├── P1
+│   ├── results
+│   │   └── StatisticsResults.txt
+│   ├── source
+│   │   ├── computeStatistics.py
+│   │   └── validateResults.py
+│   ├── test.sh
+│   └── tests
+│       ├── A4.2.P1.Results-errata.txt
+│       ├── TC1.txt
+│       ├── TC2.txt
+│       ├── TC3.txt
+│       ├── TC4.txt
+│       ├── TC5.txt
+│       ├── TC6.txt
+│       ├── TC7.txt
+│       └── example.txt
+├── P2
+│   ├── results
+│   │   └── ConvertionResults.txt
+│   ├── source
+│   │   ├── convertNumbers.py
+│   │   └── validateResults.py
+│   ├── test.sh
+│   └── tests
+│       ├── A4.2.P2.Results.txt
+│       ├── A4.2.P2.Results_fixed.txt
+│       ├── TC1.txt
+│       ├── TC1_before.txt
+│       ├── TC2.txt
+│       ├── TC3.txt
+│       ├── TC4.txt
+│       └── example.txt
+├── P3
+│   ├── results
+│   │   └── WordCountResults.txt
+│   ├── source
+│   │   ├── validateResults.py
+│   │   └── wordCount.py
+│   ├── test.sh
+│   └── tests
+│       ├── TC1.Results.txt
+│       ├── TC1.txt
+│       ├── TC2.Results.txt
+│       ├── TC2.txt
+│       ├── TC3.Results.txt
+│       ├── TC3.txt
+│       ├── TC4.Results.txt
+│       ├── TC4.txt
+│       ├── TC5.Results.txt
+│       ├── TC5.txt
+│       └── example.txt
+├── .pylintrc
+├── README.md
+└── lint.sh
+```
+
+Each program (`P1`, `P2` and `P3`) contains the following directories and files:
+
+- `source`: contains the source code of each program. Also there is a file called `validateResults.py` that helps to compare the expected results with the actual results
+- `tests`: contains files with test cases that you can pass to the program. They normally start with `TC` prefix (e.g `TC1.txt`), but is not mandatory.
+- `results`: contains the output of the program
+- `test.sh`: utility script to run the program and validate the results automatically
+
+Other files are:
+
+- `.pylintrc`: contains the rule configuration to validate code conventions following [PEP8 guidelines](https://peps.python.org/pep-0008).
+- `lint.sh`: utility script to run pylint for each file and report code convention errors
+
 ## 🧮 Program 1 — Compute Statistics
 
 ### Purpose

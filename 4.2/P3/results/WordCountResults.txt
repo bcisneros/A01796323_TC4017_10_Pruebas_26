@@ -104,7 +104,7 @@ No.  |  Word             |  Frequency
 
 Total valid words: 100
 Distinct words: 99
-Elapsed Time (seconds): 0.000366
+Elapsed Time (seconds): 0.000441
 
 === tests/TC2.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -257,7 +257,7 @@ No.  |  Word              |  Frequency
 
 Total valid words: 184
 Distinct words: 144
-Elapsed Time (seconds): 0.000383
+Elapsed Time (seconds): 0.000397
 
 === tests/TC3.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -753,7 +753,7 @@ No.  |  Word            |  Frequency
 
 Total valid words: 500
 Distinct words: 487
-Elapsed Time (seconds): 0.000509
+Elapsed Time (seconds): 0.000575
 
 === tests/TC4.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -1711,7 +1711,7 @@ No.  |  Word            |  Frequency
 
 Total valid words: 1000
 Distinct words: 949
-Elapsed Time (seconds): 0.001032
+Elapsed Time (seconds): 0.001050
 
 === tests/TC5.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -5470,8 +5470,8 @@ Elapsed Time (seconds): 0.001032
 
 Total valid words: 5000
 Distinct words: 3750
-Elapsed Time (seconds): 0.003642
+Elapsed Time (seconds): 0.003883
 
 === Batch Summary ===
 Files processed: 5
-Total elapsed time (seconds): 0.164860
+Total elapsed time (seconds): 0.158260
