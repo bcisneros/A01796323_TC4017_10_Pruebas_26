@@ -240,7 +240,6 @@ def build_aligned_table(pairs, total_valid, elapsed_seconds):
     rule = "-" * word_width + new_sep + "-" * count_width
 
     lines = []
-    lines.append("=== Word Count (Distinct Words & Frequencies) ===")
     lines.append("")
     lines.append(header)
     lines.append(rule)
@@ -257,39 +256,96 @@ def build_aligned_table(pairs, total_valid, elapsed_seconds):
 
     return "\n".join(lines)
 
-
-def main():
-    """Entry point: parse words, count, sort, and print aligned results."""
-    if len(sys.argv) != 2:
-        print(
-            "Usage:\n  python wordCount.py fileWithData.txt",
-            file=sys.stderr,
-        )
-        sys.exit(2)
-
-    input_path = sys.argv[1]
-    start_time = time.perf_counter()
-
-    words = parse_words_from_file(input_path)
-
+def build_file_section(input_path, words, elapsed_seconds):
+    """
+    Build the text section for one file: header + aligned table + totals.
+    """
     # Frequency dictionary
     freq = count_frequencies(words)
-
     # Build (word, count) tuples
     pairs = []
     for w, c in freq.items():
         pairs.append((w, c))
-
-    # Sort using our custom merge sort: count DESC, word ASC
+    # Sort: count DESC, word ASC
     sorted_pairs = merge_sort_pairs(pairs)
 
-    elapsed = time.perf_counter() - start_time
+    section_body = build_aligned_table(sorted_pairs, len(words), elapsed_seconds)
 
-    # Build aligned table and output
-    output = build_aligned_table(sorted_pairs, len(words), elapsed)
+    # Add a file-specific title
+    header = f"=== {input_path} — Word Count (Distinct Words & Frequencies) ===\n"
+    return header + section_body
 
-    print(output)
-    write_results("WordCountResults.txt", output)
+def main():
+    """
+    Entry point: accept one or multiple input files, parse words, count, sort,
+    print aligned results per file, and write one combined report at the end.
+    """
+    if len(sys.argv) < 2:
+        print(
+            "Usage:\n  python wordCount.py file1.txt [file2.txt ... fileN.txt]",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+    input_paths = sys.argv[1:]
+    all_sections = []
+    overall_start = time.perf_counter()
+
+    for input_path in input_paths:
+        start_time = time.perf_counter()
+        try:
+            words = parse_words_from_file(input_path)
+        except SystemExit:
+            # parse_words_from_file calls sys.exit(1) on fatal; to keep the batch running:
+            # re-raise would stop the entire batch; instead, just continue
+            # (If you prefer to enforce an exit on fatal, remove this block.)
+            continue
+        except Exception as exc:  # extra safety
+            print(f"[FATAL] Unexpected error reading '{input_path}': {exc}", file=sys.stderr)
+            continue
+
+        elapsed = time.perf_counter() - start_time
+
+        # If no valid words, print an empty section with totals = 0
+        if len(words) == 0:
+            lines = [
+                f"=== {input_path} — Word Count (Distinct Words & Frequencies) ===",
+                "",
+                "Word             |  Frequency",
+                "-----------------+-----------",
+                "",
+                "Total valid words: 0",
+                "Distinct words: 0",
+                f"Elapsed Time (seconds): {elapsed:.6f}",
+                "",
+            ]
+            section = "\n".join(lines)
+        else:
+            section = build_file_section(input_path, words, elapsed)
+
+        print(section)
+        all_sections.append(section)
+
+    if not all_sections:
+        print("[ERROR] No valid inputs were processed.", file=sys.stderr)
+        sys.exit(1)
+
+    overall_elapsed = time.perf_counter() - overall_start
+    footer = (
+        "\n=== Batch Summary ===\n"
+        f"Files processed: {len(all_sections)}\n"
+        f"Total elapsed time (seconds): {overall_elapsed:.6f}\n"
+    )
+
+    combined_report = "\n".join(all_sections) + footer
+
+    try:
+        import os
+        os.makedirs("results", exist_ok=True)
+    except Exception as exc:
+        print(f"[WARN] Could not ensure 'results/' directory: {exc}", file=sys.stderr)
+
+    write_results("results/WordCountResults.txt", combined_report)
 
 
 if __name__ == "__main__":
