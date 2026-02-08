@@ -80,7 +80,7 @@ def normalize_word(token):
     if trimmed == "":
         return None
 
-    lowered = to_lower(trimmed)
+    lowered = trimmed # to_lower(trimmed)
 
     if not has_alpha(lowered):
         # No alphabetic letter → not considered a 'word' for this task.
