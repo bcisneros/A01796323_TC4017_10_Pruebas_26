@@ -38,7 +38,7 @@ def parse_numbers_from_file(path):
         with open(path, "r", encoding="utf-8") as fh:
             for line_no, raw in enumerate(fh, start=1):
                 # Support commas and whitespace as separators
-                line = raw.replace(",", " ")
+                line = raw # .replace(",", " ")
                 process_line(numbers, line_no, line)
     except FileNotFoundError:
         print(f"[FATAL] File not found: {path}", file=sys.stderr)
@@ -62,6 +62,7 @@ def process_line(numbers, line_no, line):
                 f"[ERROR] Invalid token at line {line_no}: '{token}'",
                 file=sys.stderr,
             )
+            numbers.append(0.0)  # Treat invalid tokens as zero for statistics
 
 
 def merge(left, right):
@@ -254,7 +255,7 @@ def write_results(path, content):
         print(f"[ERROR] Could not write results file: {exc}", file=sys.stderr)
 
 
-def build_aligned_stats_table(rows):
+def build_aligned_stats_table(rows, input_path):
     """
     Build an aligned text table for statistics.
 
@@ -283,7 +284,7 @@ def build_aligned_stats_table(rows):
     rule = "-" * left_width + line_sep + "-" * right_width
 
     lines = []
-    lines.append("=== Descriptive Statistics ===")
+    lines.append(f"=== Descriptive Statistics ({input_path}) ===")
     lines.append("")
     lines.append(header)
     lines.append(rule)
@@ -351,10 +352,10 @@ def prepare_rows(stats, elapsed_seconds):
         ("Mean", format_number(stats["mean"], 7)),
         ("Median", format_number(stats["median"], 7)),
         ("Mode", prepare_mode_string(count, stats["modes"])),
-        # ("Population Variance", format_number(stats["var_pop"], 6)),
         ("Population Std Dev", format_number(stats["std_pop"], 7)),
+        ("Population Variance", format_number(stats["var_pop"], 6)),
+        ("Sample Std Dev", format_number(stats["std_sam"], 6)),
         ("Sample Variance", format_number(stats["var_sam"], 5)),
-        # ("Sample Std Dev", format_number(stats["std_sam"], 6)),
         ("Elapsed Time (seconds)", format_number(elapsed_seconds, 7)),
     ]
     return rows
@@ -365,39 +366,69 @@ def prepare_mode_string(count, modes):
     Prepare the mode string for output.
     """
     if len(modes) == 0 and count > 0:
-        return "No mode (all values appear once)"
+        return "#N/A"
     if len(modes) == 1:
         return format_number(modes[0], 6)
     if len(modes) > 1:
         parts = [format_number(v, 6) for v in modes]
         return "[" + ", ".join(parts) + "]"
-    return "N/A"
-
+    return "#N/A"
 
 def main():
     """
-    Entry point: parse input, compute statistics, and print aligned results.
+    Entry point: accept one or multiple input files, compute statistics per file,
+    print all results, and write one combined report at the end.
     """
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print(
-            "Usage:\n  python computeStatistics.py fileWithData.txt",
+            "Usage:\n  python computeStatistics.py file1.txt [file2.txt ... fileN.txt]",
             file=sys.stderr,
         )
         sys.exit(2)
 
-    input_path = sys.argv[1]
-    start_time = time.perf_counter()
+    input_paths = sys.argv[1:]
+    all_sections = []
+    overall_start = time.perf_counter()
 
-    data = parse_numbers_from_file(input_path)
-    stats = compute_all_statistics(data)
-    elapsed = time.perf_counter() - start_time
+    for input_path in input_paths:
+        # Per-file timing
+        start_time = time.perf_counter()
+        try:
+            data = parse_numbers_from_file(input_path)
+        except OSError as exc:
+            print(f"[FATAL] Cannot read file '{input_path}': {exc}", file=sys.stderr)
+            # Keep going with next files
+            continue
 
-    table_text = build_aligned_stats_table(prepare_rows(stats, elapsed))
+        stats = compute_all_statistics(data)
+        elapsed = time.perf_counter() - start_time
 
-    # Output to console and to file
-    print(table_text)
-    write_results("StatisticsResults.txt", table_text)
+        # Build a formatted section for this file
+        section_text = build_aligned_stats_table(
+            prepare_rows(stats, elapsed),
+            input_path
+        )
+        all_sections.append(section_text)
 
+    # If none succeeded, stop gracefully
+    if not all_sections:
+        print("[ERROR] No valid inputs were processed.", file=sys.stderr)
+        sys.exit(1)
+
+    # Optional: overall elapsed for the batch (not part of each table)
+    overall_elapsed = time.perf_counter() - overall_start
+    footer = (
+        "\n=== Batch Summary ===\n"
+        f"Files processed: {len(all_sections)}\n"
+        f"Total elapsed time (seconds): {overall_elapsed:.6f}\n"
+    )
+
+    # Join all sections with a clear separator
+    combined_report = "\n".join(all_sections) + footer
+
+    # Output to console and single results file (overwrite)
+    print(combined_report)
+    write_results("results/StatisticsResults.txt", combined_report)
 
 if __name__ == "__main__":
     main()
