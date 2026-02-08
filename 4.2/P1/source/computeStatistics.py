@@ -115,8 +115,8 @@ def compute_mean(data):
     total = Decimal(0.0)
     for x in data:
         total += Decimal(x)
-        print(f"  [DEBUG] Adding {Decimal(x)}, running total: {total}")
-    print(f"  [DEBUG] Total sum for mean: {total}, count: {n}")
+        # print(f"  [DEBUG] Adding {Decimal(x)}, running total: {total}")
+    # print(f"  [DEBUG] Total sum for mean: {total}, count: {n}")
     return total / Decimal(n)
 
 
