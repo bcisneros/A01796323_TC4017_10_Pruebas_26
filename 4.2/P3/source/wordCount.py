@@ -222,30 +222,33 @@ def build_aligned_table(pairs, total_valid, elapsed_seconds):
     Returns:
         str: full table text ready to print/write.
     """
+    header_number = "No."
     header_word = "Word"
     header_count = "Frequency"
 
+    number_width = len(header_number)
     word_width = len(header_word)
     count_width = len(header_count)
 
     # Compute max widths
     for w, c in pairs:
+        number_width = max(number_width, len(str(pairs.index((w, c)) + 1)))
         word_width = max(word_width, len(w))
         count_width = max(count_width, len(str(c)))
 
     sep = "  |  "
     left = header_word.ljust(word_width)
-    header = left + sep + header_count.rjust(count_width)
+    header = header_number.rjust(number_width) + sep + left + sep + header_count.rjust(count_width)
     new_sep = sep.replace("|", "+").replace(" ", "-")
-    rule = "-" * word_width + new_sep + "-" * count_width
+    rule = "-" * number_width + new_sep + "-" * word_width + new_sep + "-" * count_width
 
     lines = []
     lines.append("")
     lines.append(header)
     lines.append(rule)
 
-    for w, c in pairs:
-        line = w.ljust(word_width) + sep + str(c).rjust(count_width)
+    for i, (w, c) in enumerate(pairs, start=1):
+        line = str(i).rjust(number_width) + sep + w.ljust(word_width) + sep + str(c).rjust(count_width)
         lines.append(line)
 
     lines.append("")
