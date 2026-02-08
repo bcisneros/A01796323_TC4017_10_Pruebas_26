@@ -25,7 +25,7 @@ import re
 import sys
 
 YOUR_RESULTS_PATH = "results/ConvertionResults.txt"
-EXPECTED_PATH     = "tests/A4.2.P2.Results.txt"
+EXPECTED_PATH     = "tests/A4.2.P2.Results_fixed.txt"
 
 DEBUG = ("--debug" in sys.argv)
 
@@ -66,7 +66,7 @@ def is_rule_or_total_or_header_line(s: str) -> bool:
     return False
 
 # ---------------- Parser: tus resultados ----------------
-HEADER_RE = re.compile(r"^===\s*tests/(TC\d+)\.txt.*?===\s*$", re.MULTILINE)
+HEADER_RE = re.compile(r"^===\s*tests/(TC\d+.*)\.txt.*?===\s*$", re.MULTILINE)
 
 def parse_user_sections(text: str):
     """
@@ -196,13 +196,12 @@ def parse_expected_sections(text: str):
       <rows>
 
     Devuelve dict[tc] = [{line, dec, bin, hex}...]
-    (El archivo que compartiste trae ese formato por TC, incluyendo TC4 con ABC/ERR/VAL) [2](https://tecmx-my.sharepoint.com/personal/a01796323_tec_mx/Documents/Archivos%20de%20Microsoft%C2%A0Copilot%20Chat/A4.2.P2.Results.txt)
     """
     lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
     results = {}
     current_tc = None
 
-    header_re = re.compile(r"^ITEM\s+TC(\d+)\s+BIN\s+HEX\b", re.IGNORECASE)
+    header_re = re.compile(r"^ITEM\s+TC(\d+).*\s+BIN\s+HEX\b", re.IGNORECASE)
     row_re    = re.compile(r"^\s*(\d+)\s+([\-A-Za-z0-9]+)\s+([#A-Za-z0-9!]+)\s+([#A-Za-z0-9!\\]+)\s*$")
 
     for ln in lines:
