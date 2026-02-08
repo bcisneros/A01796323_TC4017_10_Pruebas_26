@@ -380,7 +380,7 @@ def main():
         rows = prepare_rows(line_value_pairs)
         elapsed = time.perf_counter() - start_time
 
-        # Build the section for this input file (keeps your table format)
+        # Build the section for this input file
         section = build_aligned_table(rows, elapsed, input_path)
         print(section)
         all_sections.append(section)

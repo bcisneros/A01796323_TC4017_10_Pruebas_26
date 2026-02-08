@@ -104,7 +104,7 @@ worse            |          1
 
 Total valid words: 100
 Distinct words: 99
-Elapsed Time (seconds): 0.000466
+Elapsed Time (seconds): 0.000378
 
 === tests/TC2.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -257,7 +257,7 @@ win               |          1
 
 Total valid words: 184
 Distinct words: 144
-Elapsed Time (seconds): 0.000414
+Elapsed Time (seconds): 0.000355
 
 === tests/TC3.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -753,7 +753,7 @@ zdnet           |          1
 
 Total valid words: 500
 Distinct words: 487
-Elapsed Time (seconds): 0.000605
+Elapsed Time (seconds): 0.000613
 
 === tests/TC4.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -1711,7 +1711,7 @@ zen             |          1
 
 Total valid words: 1000
 Distinct words: 949
-Elapsed Time (seconds): 0.001101
+Elapsed Time (seconds): 0.000995
 
 === tests/TC5.txt — Word Count (Distinct Words & Frequencies) ===
 
@@ -5470,8 +5470,8 @@ zen                 |          1
 
 Total valid words: 5000
 Distinct words: 3750
-Elapsed Time (seconds): 0.004479
+Elapsed Time (seconds): 0.004034
 
 === Batch Summary ===
 Files processed: 5
-Total elapsed time (seconds): 0.039814
+Total elapsed time (seconds): 0.039988
