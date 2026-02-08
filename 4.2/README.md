@@ -45,6 +45,7 @@ Reads a file of numeric values and computes:
 - Supports **very large numbers** (e.g., TC6, TC7) with high‑precision processing.
 - Implements both **population** and **sample** formulas.
 - Fully compliant with **PEP‑8** and validated with **PyLint**.
+- Support multiple files
 
 ### Example
 
@@ -67,8 +68,8 @@ Execute program:
 
 ```
 $ cd P1
-$ python computeStatistics.py example.txt
-=== Descriptive Statistics ===
+$ python source/computeStatistics.py tests/example.txt
+=== Descriptive Statistics (tests/example.txt) ===
 
 Metric                  |      Value
 ------------------------+-----------
@@ -77,8 +78,14 @@ Mean                    |         47
 Median                  |         45
 Mode                    |         10
 Population Std Dev      |         29
+Population Variance     |        841
+Sample Std Dev          |  30.568684
 Sample Variance         |  934.44444
-Elapsed Time (seconds)  |  0.0003605
+Elapsed Time (seconds)  |  0.0019343
+
+=== Batch Summary ===
+Files processed: 1
+Total elapsed time (seconds): 0.001976
 ```
 
 ### ✔ Program Requirements Check
@@ -134,6 +141,7 @@ Converts decimal integers (positive, negative, and invalid cases) into:
 - Supports negative numbers.
 - Outputs formatted conversion tables.
 - Fully PEP‑8 compliant and validated with PyLint.
+- Support multiple files
 
 ### Example
 
@@ -155,8 +163,8 @@ Execute program:
 
 ```
 $ cd P2
-$ python convertNumbers.py example.txt
-=== Conversions (Line, Decimal → Binary, Hex) ===
+$ python source/convertNumbers.py tests/example.txt
+=== tests/example.txt Conversions (Line, Decimal → Binary, Hex) ===
 
 Line  |  Decimal  |          Binary  |   Hex
 ------+-----------+------------------+------
@@ -171,19 +179,19 @@ Line  |  Decimal  |          Binary  |   Hex
    9  |    10299  |  10100000111011  |  283B
 
 Total valid items: 9
-Elapsed Time (seconds): 0.000229
+Elapsed Time (seconds): 0.000279
 ```
 
 ### ✔ Program Requirements Check
 
 - ✔ **Req 1**: Program is invoked from command line with a file containing numbers.
 - ✔ **Req 2**: Convert each number to:
-
   - Binary (base 2)
   - Hexadecimal (base 16)
 
   using basic algorithms only (no built‑in converters).
   Output is printed on screen and in: `ConvertionResults.txt`
+
 - ✔ **Req 3**: Invalid data is detected and reported on console. Program continues execution.
 - ✔ **Req 4**: Program name is `convertNumbers.py`
 - ✔ **Req 5**: The invocation format is:
@@ -210,20 +218,61 @@ Processes a text file and generates a frequency table of unique words.
 
 ### Operations
 
-- Converts all words to lowercase.
 - Removes non‑alphabetic characters.
 - Counts total valid words and distinct words.
 - Orders output by:
   - Higher frequency
   - Alphabetically
+- Support multiple files
+
+### Example
+
+File Content:
+
+```
+four
+one
+two
+three
+four
+two
+three
+four
+three
+four
+```
+
+Execute program:
+
+```
+$ cd P3
+$ python source/wordCount.py tests/example.txt
+=== tests/example.txt — Word Count (Distinct Words & Frequencies) ===
+
+No.  |  Word   |  Frequency
+-----+---------+-----------
+  1  |  four   |          4
+  2  |  three  |          3
+  3  |  two    |          2
+  4  |  one    |          1
+
+Total valid words: 10
+Distinct words: 4
+Elapsed Time (seconds): 0.000198
+```
 
 ### ✔ Program Requirements Check
 
-- ✔ **Req 1**:
-- ✔ **Req 2**:
-- ✔ **Req 3**:
-- ✔ **Req 4**:
-- ✔ **Req 5**:
-- ✔ **Req 6**:
-- ✔ **Req 7**:
-- ✔ **Req 8**:
+- ✔ **Req 1**: The program is invoked from a command line. The program receives a file as parameter. The file will contain a words (presumable between spaces).
+
+- ✔ **Req 2**: The program identifies all distinct words and the frequency of them (how many times the word “X” appears in the file). The results are printed on a screen and on a file named `WordCountResults.txt`. All computation is calculated using the basic algorithms, not functions or libraries.
+
+- ✔ **Req 3**: The program includes the mechanism to handle invalid data in the file. Errors are displayed in the console and the execution continues.
+- ✔ **Req 4**: The name of the program is `wordCount.py`
+- ✔ **Req 5**: The minimum format to invoke the program is as follows:
+  ```
+  python wordCount.py fileWithData.txt
+  ```
+- ✔ **Req 6**: The program manages files having from hundreds of items to thousands of items.
+- ✔ **Req 7**: The program includes at the end of the execution the time elapsed for the execution and calculus of the data. This number is included in the results file and on the screen.
+- ✔ **Req 8**: Is compliant with PEP8.
