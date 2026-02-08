@@ -23,6 +23,9 @@ Usage:
 import sys
 import time
 
+from decimal import Decimal, getcontext, InvalidOperation
+
+getcontext().prec = 28  # Set decimal precision for accurate calculations
 
 def parse_numbers_from_file(path):
     """
@@ -37,8 +40,7 @@ def parse_numbers_from_file(path):
     try:
         with open(path, "r", encoding="utf-8") as fh:
             for line_no, raw in enumerate(fh, start=1):
-                # Support commas and whitespace as separators
-                line = raw  # .replace(",", " ")
+                line = raw.strip()
                 process_line(numbers, line_no, line)
     except FileNotFoundError:
         print(f"[FATAL] File not found: {path}", file=sys.stderr)
@@ -54,10 +56,9 @@ def process_line(numbers, line_no, line):
     """Process a single line, updating numbers list with valid floats."""
     for token in line.split():
         try:
-            # Accept ints or floats (including scientific notation)
-            value = float(token)
+            value = Decimal(token)
             numbers.append(value)
-        except ValueError:
+        except (InvalidOperation, ValueError):
             print(
                 f"[ERROR] Invalid token at line {line_no}: '{token}'",
                 file=sys.stderr,
@@ -111,10 +112,12 @@ def compute_mean(data):
     n = len(data)
     if n == 0:
         return None
-    total = 0.0
+    total = Decimal(0.0)
     for x in data:
-        total += x
-    return total / n
+        total += Decimal(x)
+        print(f"  [DEBUG] Adding {Decimal(x)}, running total: {total}")
+    print(f"  [DEBUG] Total sum for mean: {total}, count: {n}")
+    return total / Decimal(n)
 
 
 def compute_median(sorted_data):
@@ -129,7 +132,7 @@ def compute_median(sorted_data):
     if n % 2 == 1:
         return sorted_data[mid]
     # Even count: average of the two middle values
-    return (sorted_data[mid - 1] + sorted_data[mid]) / 2.0
+    return (sorted_data[mid - 1] + sorted_data[mid]) / Decimal(2.0)
 
 
 def compute_mode(data):
@@ -178,12 +181,11 @@ def compute_variance_population(data, mean_value):
     n = len(data)
     if n == 0:
         return None
-    total_sq_dev = 0.0
+    total_sq_dev = Decimal(0.0)
     for x in data:
-        diff = x - mean_value
+        diff = Decimal(x) - mean_value
         total_sq_dev += diff * diff
-    return total_sq_dev / n
-
+    return total_sq_dev / Decimal(n)
 
 def compute_variance_sample(data, mean_value):
     """
@@ -193,12 +195,11 @@ def compute_variance_sample(data, mean_value):
     n = len(data)
     if n < 2:
         return None
-    total_sq_dev = 0.0
+    total_sq_dev = Decimal(0.0)
     for x in data:
-        diff = x - mean_value
+        diff = Decimal(x) - mean_value
         total_sq_dev += diff * diff
-    return total_sq_dev / (n - 1)
-
+    return total_sq_dev / Decimal(n - 1)
 
 def sqrt_newton(value, tol=1e-12, max_iter=100):
     """
@@ -213,16 +214,16 @@ def sqrt_newton(value, tol=1e-12, max_iter=100):
         return 0.0
 
     # Initial guess
-    x = value
+    x = Decimal(value)
     for _ in range(max_iter):
         prev = x
-        x = 0.5 * (x + value / x)
+        x = Decimal("0.5") * (x + value / x)
         if x == 0:
             break
         if prev == 0:
             continue
         # Convergence check
-        if abs(x - prev) <= tol * max(1.0, abs(prev)):
+        if abs(x - prev) <= Decimal(tol) * max(Decimal("1.0"), abs(prev)):
             break
     return x
 
