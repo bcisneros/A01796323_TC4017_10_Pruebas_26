@@ -204,7 +204,7 @@ Line  |  Decimal  |   Binary  |  Hex
  200  |       39  |   100111  |   27
 
 Total valid items: 200
-Elapsed Time (seconds): 0.001030
+Elapsed Time (seconds): 0.000919
 
 === tests/TC2.txt Conversions (Line, Decimal → Binary, Hex) ===
 
@@ -412,7 +412,7 @@ Line  |  Decimal  |                    Binary  |     Hex
  200  |       39  |                    100111  |      27
 
 Total valid items: 200
-Elapsed Time (seconds): 0.001588
+Elapsed Time (seconds): 0.001468
 
 === tests/TC3.txt Conversions (Line, Decimal → Binary, Hex) ===
 
@@ -620,7 +620,7 @@ Line  |  Decimal  |      Binary  |         Hex
  200  |        4  |         100  |           4
 
 Total valid items: 200
-Elapsed Time (seconds): 0.001020
+Elapsed Time (seconds): 0.000929
 
 === tests/TC4.txt Conversions (Line, Decimal → Binary, Hex) ===
 
@@ -669,8 +669,8 @@ Line  |  Decimal  |      Binary  |         Hex
   41  |      VAL  |     #VALUE!  |     #VALUE!
 
 Total valid items: 41
-Elapsed Time (seconds): 0.000372
+Elapsed Time (seconds): 0.000229
 
 === Batch Summary ===
 Files processed: 4
-Total elapsed time (seconds): 0.006140
+Total elapsed time (seconds): 0.005410

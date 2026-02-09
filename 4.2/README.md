@@ -198,6 +198,37 @@ Total elapsed time (seconds): 0.001976
 - File management
 - Error handling
 
+### Evaluation Results
+
+#### 1. Static Analysis — No issues detected
+
+![PyLint results for P1](./P1/results/pylint_results_p1.png)
+
+#### 2. All test cases passing
+
+To facilitate the result checking, run the following command:
+
+```
+$ cd P1
+$ ./test.sh
+```
+
+This executes the program against each test case and collect the results into `P1/results/StatisticsResults.txt`. Then it run the validation against the expected results on `P1/tests/A4.2.P1.Results-errata.txt` file.
+
+> **Note**: Inside the activity specifications said that we need to calculate the Population Variance, but inside the expected results it shows the Sample Variance as expected. This is because the Excel file provided uses the `VAR.S` instead of `VAR.P` function as shown in the following image:
+> ![VAR.S](./P1/results/excel_variance_sample.png)
+> ![VAR.P](./P1/results/excel_variance_population.png)
+
+
+![Results from TC1 to TC4 for P1](./P1/results/tc1_4_results.png)
+
+> **Note**: TC6 and TC5 are failing not due the results are wrong, but the expected results are calculated incorrectly. Excel does not calculates correctly when the numbers have more than 15 digits as explained in the following [video](https://www.youtube.com/watch?v=IZiKChu0yQM)
+
+![Excel Error with big numbers](./P1/results/excel_error.png)
+
+
+![Results from TC5 to TC5 for P1](./P1/results/tc5_7_results.png)
+
 ## 🔢 Program 2 — Converter (Decimal → Binary / Hex)
 
 ### Purpose
@@ -283,6 +314,28 @@ Elapsed Time (seconds): 0.000279
 - Console I/O
 - Error handling
 
+
+### Evaluation Results
+
+#### 1. Static Analysis — No issues detected
+
+![PyLint results for P2](./P2/results/pylint_results_p2.png)
+
+#### 2. All test cases passing
+
+To facilitate the result checking, run the following command:
+
+```
+$ cd P2
+$ ./test.sh
+```
+
+This executes the program against each test case and collect the results into `P2/results/ConvertionResults.txt`. Then it run the validation against the expected results on `P2/tests/A4.2.P2.Results_fixed.txt` file.
+
+![Validation Results](./P2/results/validation_results.png)
+
+> **Note**: I replaced the content of `TC1.txt` with the correct input values found inside `P2/tests/A4.2.P2.Results_original.txt` due an error on that file for this test case was showing extra columns. The original content is inside `P2/tests/TC1_original.txt`. 
+
 ## 📝 Program 3 — Count Words
 
 ### Purpose
@@ -349,3 +402,31 @@ Elapsed Time (seconds): 0.000198
 - ✔ **Req 6**: The program manages files having from hundreds of items to thousands of items.
 - ✔ **Req 7**: The program includes at the end of the execution the time elapsed for the execution and calculus of the data. This number is included in the results file and on the screen.
 - ✔ **Req 8**: Is compliant with PEP8.
+
+### Skills Demonstrated
+
+- Control structures
+- Console Input/Output
+- Error Handling
+- String manipulation
+
+### Evaluation Results
+
+#### 1. Static Analysis — No issues detected
+
+![PyLint results for P3](./P3/results/pylint_results_p3.png)
+
+#### 2. All test cases passing
+
+To facilitate the result checking, run the following command:
+
+```
+$ cd P3
+$ ./test.sh
+```
+
+This executes the program against each test case (`P3/tests/TC{N}.txt`) and collect the results into `P2/results/WordCountResults.txt`. Then it run the validation against the expected results on `P3/tests/TC{N}.Results.txt` file.
+
+![Validation Results](./P3/results/validation_results.png)
+
+> **Note**: My solution order the results first by frequency in Descending order, then by word alphabetically. The expected results seems does not have a specific order, so I was unable to identify the rule for that. 
