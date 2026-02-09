@@ -63,7 +63,10 @@ def load_sales(path: Path) -> List[dict]:
     return data
 
 
-def compute_totals(catalogue: Dict[str, float], sales: List[dict]) -> Tuple[List[dict], float]:
+def compute_totals(
+    catalogue: Dict[str, float],
+    sales: List[dict],
+) -> Tuple[List[dict], float]:
     """Compute per-line totals and a grand total from the inputs."""
     line_items: List[dict] = []
     total_sum = 0.0
@@ -74,7 +77,10 @@ def compute_totals(catalogue: Dict[str, float], sales: List[dict]) -> Tuple[List
             product = str(record["Product"]).strip()
             qty = int(record["Quantity"])
         except (KeyError, TypeError, ValueError):
-            print(f"WARNING: Invalid record skipped at index {idx}: {record}")
+            print(
+                "WARNING: Invalid record skipped at index "
+                f"{idx}: {record}"
+            )
             continue
 
         price = catalogue.get(product)
@@ -85,13 +91,22 @@ def compute_totals(catalogue: Dict[str, float], sales: List[dict]) -> Tuple[List
         line_total = price * qty
         total_sum += line_total
         line_items.append(
-            {"product": product, "qty": qty, "price": price, "total": line_total}
+            {
+                "product": product,
+                "qty": qty,
+                "price": price,
+                "total": line_total
+            }
         )
 
     return line_items, total_sum
 
 
-def format_report(line_items: List[dict], total_sum: float, elapsed: float) -> str:
+def format_report(
+    line_items: List[dict],
+    total_sum: float,
+    elapsed: float,
+) -> str:
     """Return a human-readable multi-line report string."""
     lines = []
     lines.append("SALES RESULTS REPORT")
