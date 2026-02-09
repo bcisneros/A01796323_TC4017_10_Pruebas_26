@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+# pylint: disable=invalid-name
 """
-validate_p1_results.py
+validateResults.py
 
 Validates P1 results by comparing:
   - your report:   P1/results/StatisticsResults.txt
@@ -31,7 +31,7 @@ from decimal import Decimal, InvalidOperation
 
 # ------------------------------ Config ------------------------------
 YOUR_RESULTS_PATH = os.path.join("results", "StatisticsResults.txt")
-EXPECTED_PATH     = os.path.join("tests", "A4.2.P1.Results-errata.txt")
+EXPECTED_PATH = os.path.join("tests", "A4.2.P1.Results-errata.txt")
 
 # Absolute and relative tolerances for floating-point comparisons
 ABS_TOL = Decimal("1e-26")
@@ -54,6 +54,7 @@ TC_ORDER = ["TC1", "TC2", "TC3", "TC4", "TC5", "TC6", "TC7"]
 
 # ------------------------------ Helpers ------------------------------
 
+
 def d(s):
     """Parse string to Decimal safely (strip spaces/commas)."""
     try:
@@ -64,8 +65,11 @@ def d(s):
     except (InvalidOperation, AttributeError):
         return None
 
+
 def is_big_integer_string(s):
-    """Return True if s looks like a (very) large integer (no decimal point)."""
+    """
+    Return True if s looks like a (very) large integer (no decimal point).
+    """
     s = s.strip()
     if not s:
         return False
@@ -75,8 +79,12 @@ def is_big_integer_string(s):
         s2 = s
     return s2.isdigit()
 
-def almost_equal_decimal(a: Decimal, b: Decimal, abs_tol=ABS_TOL, rel_tol=REL_TOL):
-    """Decide if two Decimals are 'close enough' per abs/rel tolerances."""
+
+def almost_equal_decimal(
+        a: Decimal, b: Decimal, abs_tol=ABS_TOL, rel_tol=REL_TOL):
+    """
+    Decide if two Decimals are 'close enough' per abs/rel tolerances.
+    """
     if a == b:
         return True
     diff = abs(a - b)
@@ -85,6 +93,7 @@ def almost_equal_decimal(a: Decimal, b: Decimal, abs_tol=ABS_TOL, rel_tol=REL_TO
         return diff <= abs_tol
     # Else, combine absolute + relative
     return (diff <= abs_tol) or (diff / max(abs(a), abs(b)) <= rel_tol)
+
 
 def parse_modes_from_yours(value_str):
     """
@@ -122,12 +131,13 @@ def parse_modes_from_yours(value_str):
         # fallback: treat as NO_MODE if unknown
         return ("NO_MODE", set())
 
+
 def parse_modes_from_expected(value_str):
     """
     Parse expected Mode field:
       - "#N/A" or "N/A" => NO_MODE
       - "393"           => single
-      - "[170, 393]"    => list (if present in grid – unlikely in this activity)
+      - "[170, 393]"    => list (if present in grid)
     """
     val = value_str.strip()
     if val.upper() in {"#N/A", "N/A"}:
@@ -150,6 +160,7 @@ def parse_modes_from_expected(value_str):
         return ("LIST", {single})
     except Exception:
         return ("NO_MODE", set())
+
 
 def compare_mode(your_str, expected_str):
     """
@@ -178,6 +189,7 @@ def compare_mode(your_str, expected_str):
 
 # ------------------------------ Parsers ------------------------------
 
+
 def parse_your_results(path):
     """
     Parse your multi-section results file.
@@ -191,13 +203,15 @@ def parse_your_results(path):
         text = fh.read()
 
     # split sections by "=== Descriptive Statistics (tests/TCx.txt) ==="
-    sec_re = re.compile(r"^===\s*Descriptive Statistics\s*\((.+?)\)\s*===$", re.MULTILINE)
+    sec_re = re.compile(
+        r"^===\s*Descriptive Statistics\s*\((.+?)\)\s*===$", re.MULTILINE)
     sections = []
     last_pos = 0
     for m in sec_re.finditer(text):
         if sections:
             # previous section body ends before this header
-            sections[-1]["body"] = text[sections[-1]["start"]:m.start()].strip()
+            sections[-1]["body"] = text[sections[-1]
+                                        ["start"]:m.start()].strip()
         sections.append({"hdr": m.group(1), "start": m.end(), "body": ""})
     if sections:
         sections[-1]["body"] = text[sections[-1]["start"]:].strip()
@@ -231,6 +245,7 @@ def parse_your_results(path):
 
     return results
 
+
 def parse_expected_grid(path):
     """
     Parse the expected grid:
@@ -257,18 +272,22 @@ def parse_expected_grid(path):
         if ln.startswith("TC") and "TC1" in ln:
             header_idx = i
             # split by whitespace or tabs
-            tc_headers = [tok.strip() for tok in re.split(r"[ \t]+", ln) if tok.strip()]
+            tc_headers = [tok.strip()
+                          for tok in re.split(r"[ \t]+", ln) if tok.strip()]
             break
     if header_idx == -1:
         # Try: a line begins with something like "TC    TC1  TC2 ..."
         for i, ln in enumerate(lines):
             if "TC1" in ln and "TC2" in ln:
                 header_idx = i
-                tc_headers = [tok.strip() for tok in re.split(r"[ \t]+", ln) if tok.strip()]
+                tc_headers = get_tc_headers(ln)
                 break
 
     if header_idx == -1:
-        print("[FATAL] Could not locate TC header line in expected file.", file=sys.stderr)
+        print(
+            "[FATAL] Could not locate TC header line in expected file.", 
+            file=sys.stderr
+        )
         sys.exit(1)
 
     # Build column index map for TCs
@@ -291,9 +310,6 @@ def parse_expected_grid(path):
         if row_label not in metrics_interest:
             continue
 
-        # Rebuild a row aligned with header tokens; if misaligned, be defensive:
-        # We try to map tokens by position (best effort). If tabular spacing is inconsistent,
-        # we fallback to scanning the line for each TC token.
         for tc in TC_ORDER:
             if tc not in col_map:
                 continue
@@ -309,7 +325,11 @@ def parse_expected_grid(path):
 
     return expected
 
+def get_tc_headers(ln):
+    return [tok.strip() for tok in re.split(r"[ \t]+", ln) if tok.strip()]
+
 # ------------------------------ Validator ------------------------------
+
 
 def validate(yours, expected):
     """
@@ -349,49 +369,50 @@ def validate(yours, expected):
                 if ok:
                     print(f"  ✅ PASS: Mode (expected {e_raw})")
                 else:
-                    print(f"  ❌ FAIL: Mode mismatch (expected {e_raw}, got {y_raw})")
+                    print(
+                        f"  ❌ FAIL: Mode mismatch (exp {e_raw}, got {y_raw})")
                     all_ok = False
                 continue
 
-            # Otherwise numeric compare
-            # Decide whether to treat as big integer or float
-            # - If expected looks like an integer (no dot), do exact integer compare.
-            # - Else use Decimal with tolerances.
             if e_raw.upper() in {"#N/A", "N/A"}:
                 # Should not happen for non-mode rows; mark fail
-                print(f"  ❌ FAIL: Unexpected non-numeric expected for {your_key}: {e_raw}")
+                print(
+                    f"  ❌ FAIL: Unexpected non-numeric {your_key}: {e_raw}")
                 all_ok = False
                 continue
 
             if is_big_integer_string(e_raw):
                 # exact integer compare
-                # print(f"  Comparing as big integers: expected '{e_raw}', got '{y_raw}'")
                 try:
                     ya = d(y_raw)
                     ea = d(e_raw)
                     if ya is None or ea is None or (ya != ea):
-                        print(f"  ❌ FAIL: {your_key} (expected {e_raw}, got {y_raw})")
+                        print(
+                            f"  ❌ FAIL: {your_key} (exp {e_raw}, got {y_raw})")
                         all_ok = False
                     else:
                         print(f"  ✅ PASS: {your_key}")
                 except Exception:
-                    print(f"  ❌ FAIL: {your_key} (expected {e_raw}, got {y_raw})")
+                    print(
+                        f"  ❌ FAIL: {your_key} (exp {e_raw}, got {y_raw})")
                     all_ok = False
             else:
                 # floating or decimal numbers: tolerance-based compare
                 ya = d(y_raw)
                 ea = d(e_raw)
-                # print(f"  Comparing as decimals: expected '{ea}', got '{ya}'")
                 if ya is None or ea is None:
-                    print(f"  ❌ FAIL: {your_key} (expected {e_raw}, got {y_raw})")
+                    print(
+                        f"  ❌ FAIL: {your_key} (exp {e_raw}, got {y_raw})")
                     all_ok = False
                 else:
                     if almost_equal_decimal(ya, ea):
                         print(f"  ✅ PASS: {your_key}")
                     else:
                         # include deltas for debugging
-                        diff = (ya - ea)
-                        print(f"  ❌ FAIL: {your_key} (expected {e_raw}, got {y_raw}, diff={diff})")
+                        diff = ya - ea
+                        print(
+                            # pylint: disable=line-too-long
+                            f"  ❌ FAIL: {your_key} (exp {e_raw}, got {y_raw}, diff={diff})")
                         all_ok = False
 
         print()
@@ -402,11 +423,13 @@ def validate(yours, expected):
 
 # ------------------------------ Main ------------------------------
 
+
 def main():
     yours = parse_your_results(YOUR_RESULTS_PATH)
     expected = parse_expected_grid(EXPECTED_PATH)
     ok = validate(yours, expected)
     sys.exit(0 if ok else 1)
+
 
 if __name__ == "__main__":
     main()

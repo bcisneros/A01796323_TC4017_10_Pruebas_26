@@ -106,7 +106,7 @@ Each program (`P1`, `P2` and `P3`) contains the following directories and files:
 Other files are:
 
 - `.pylintrc`: contains the rule configuration to validate code conventions following [PEP8 guidelines](https://peps.python.org/pep-0008).
-- `lint.sh`: utility script to run pylint for each file and report code convention errors
+- `lint.sh`: utility script to run pylint for each file and report code convention errors (validateResults.py are excluded for now due they are just my own utilities and are not in the scope for evaluation, and might have errors, mostly long lines)
 
 ## 🧮 Program 1 — Compute Statistics
 
@@ -439,4 +439,26 @@ This executes the program against each test case (`P3/tests/TC{N}.txt`) and coll
 
 ![Validation Results](./P3/results/validation_results.png)
 
-> **Note**: My solution order the results first by frequency in Descending order, then by word alphabetically. The expected results seems does not have a specific order, so I was unable to identify the rule for that. 
+> **Note**: My solution order the results first by frequency in Descending order, then by word alphabetically. The expected results seems does not have a specific order, so I was unable to identify the rule for that.
+
+## Lessons learned with this activity
+
+Throughout this activity, I gained several insights about code quality, tooling, and the challenges of validating program output:
+
+
+- **Following strict coding conventions can initially feel intimidating and frustrating**. These rules force constant adjustments to the code, especially early on, and it takes time to internalize them as part of a normal workflow.
+
+
+- **Using tools like `pylint` significantly reduces the mental load**. Instead of relying solely on manual review, static analysis tools quickly highlight issues, making it easier to recognize patterns and gradually improve code quality.
+
+
+- **The 79‑character line limit feels outdated for modern development environments**. While historically justified, today’s screens rarely impose such restrictions, and maintaining readability under such a tight limit can be challenging. A more reasonable width—around 100 characters—better aligns with current display capabilities while still enforcing discipline.
+
+
+- **It was interesting to learn how to process files with different input formats and run multiple test scenarios**. Automating conversions and validations helped reinforce the importance of building flexible input handling and predictable output generation.
+
+
+- **One of the most frustrating parts was the manual inspection of results and discovering inconsistencies between input files and expected outputs**. Although tedious, it reflects real‑world situations where requirements, datasets, or expected results may be inaccurate. This experience highlighted the importance of questioning assumptions and validating whether the “expected” output is actually correct.
+
+
+Overall, this activity reinforced the value of tooling, consistency, and critical thinking when working with code and evaluating software behavior.
