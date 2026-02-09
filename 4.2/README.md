@@ -31,7 +31,13 @@ The assignment focuses on:
 .
 ├── P1
 │   ├── results
-│   │   └── StatisticsResults.txt
+│   │   ├── StatisticsResults.txt
+│   │   ├── excel_error.png
+│   │   ├── excel_variance_population.png
+│   │   ├── excel_variance_sample.png
+│   │   ├── pylint_results_p1.png
+│   │   ├── tc1_4_results.png
+│   │   └── tc5_7_results.png
 │   ├── source
 │   │   ├── computeStatistics.py
 │   │   └── validateResults.py
@@ -48,23 +54,27 @@ The assignment focuses on:
 │       └── example.txt
 ├── P2
 │   ├── results
-│   │   └── ConvertionResults.txt
+│   │   ├── ConvertionResults.txt
+│   │   ├── pylint_results_p2.png
+│   │   └── validation_results.png
 │   ├── source
 │   │   ├── convertNumbers.py
 │   │   └── validateResults.py
 │   ├── test.sh
 │   └── tests
-│       ├── A4.2.P2.Results.txt
 │       ├── A4.2.P2.Results_fixed.txt
+│       ├── A4.2.P2.Results_original.txt
 │       ├── TC1.txt
-│       ├── TC1_before.txt
+│       ├── TC1_original.txt
 │       ├── TC2.txt
 │       ├── TC3.txt
 │       ├── TC4.txt
 │       └── example.txt
 ├── P3
 │   ├── results
-│   │   └── WordCountResults.txt
+│   │   ├── WordCountResults.txt
+│   │   ├── pylint_results_p3.png
+│   │   └── validation_results.png
 │   ├── source
 │   │   ├── validateResults.py
 │   │   └── wordCount.py
@@ -90,7 +100,7 @@ Each program (`P1`, `P2` and `P3`) contains the following directories and files:
 
 - `source`: contains the source code of each program. Also there is a file called `validateResults.py` that helps to compare the expected results with the actual results
 - `tests`: contains files with test cases that you can pass to the program. They normally start with `TC` prefix (e.g `TC1.txt`), but is not mandatory.
-- `results`: contains the output of the program
+- `results`: contains the output of the program and screenshots.
 - `test.sh`: utility script to run the program and validate the results automatically
 
 Other files are:
