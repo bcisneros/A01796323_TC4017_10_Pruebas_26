@@ -4,6 +4,7 @@ Compute sales totals from a product catalogue (JSON) and a sales file (JSON).
 
 Usage:
     python computeSales.py products.json sales.json [--no-messages]
+                                                  [--outdir PATH]
 
 This script prints a human-readable report to the console and writes the same
 content to SalesResults.txt. It handles bad records gracefully (continues
@@ -11,6 +12,9 @@ processing and prints warnings), and reports elapsed time.
 
 By default, non-fatal warnings and errors are included in the output.
 Pass --no-messages to hide those sections.
+
+Use --outdir PATH to choose the output directory for SalesResults.txt.
+If not provided, the current directory is used.
 """
 
 import json
@@ -48,15 +52,12 @@ def load_catalogue(path: Path, warnings: List[str]) -> Dict[str, float]:
 
     catalogue: Dict[str, float] = {}
     for item in data:
-        # Validate expected keys and value types
         try:
             title = str(item["title"]).strip()
             price = float(item["price"])
         except (KeyError, TypeError, ValueError):
-            msg = f"Invalid catalogue entry skipped: {item}"
-            warnings.append(msg)
+            warnings.append(f"Invalid catalogue entry skipped: {item}")
             continue
-
         catalogue[title] = price
 
     return catalogue
@@ -93,7 +94,6 @@ def compute_totals(
     total_sum = 0.0
 
     for idx, record in enumerate(sales):
-        # Validate expected record fields
         try:
             product = str(record["Product"]).strip()
             qty = int(record["Quantity"])
@@ -142,7 +142,6 @@ def format_report(report: ReportData) -> str:
     lines.append("=" * 60)
 
     if report.include_messages:
-        # WARNINGS section
         lines.append("WARNINGS")
         lines.append("-" * 60)
         if report.warnings:
@@ -152,7 +151,6 @@ def format_report(report: ReportData) -> str:
             lines.append("(none)")
         lines.append("")
 
-        # ERRORS section
         lines.append("ERRORS")
         lines.append("-" * 60)
         if report.errors:
@@ -165,39 +163,54 @@ def format_report(report: ReportData) -> str:
     return "\n".join(lines)
 
 
-def parse_args(argv: List[str]) -> Tuple[Path, Path, bool]:
-    """Parse simple argv: two positional files plus optional flag."""
-    if len(argv) not in (3, 4):
+def parse_args(argv: List[str]) -> Tuple[Path, Path, bool, Path]:
+    """Parse args: two positional files + optional flags in any order.
+
+    Supported options:
+      --no-messages          Hide WARNINGS and ERRORS sections
+      --outdir PATH          Output directory for SalesResults.txt
+    """
+    if len(argv) < 3:
         print(
             "Usage: python computeSales.py products.json sales.json "
-            "[--no-messages]"
+            "[--no-messages] [--outdir PATH]"
         )
         sys.exit(1)
 
     products_path = Path(argv[1])
     sales_path = Path(argv[2])
+
     include_messages = True
+    outdir = Path(".")
 
-    if len(argv) == 4:
-        if argv[3] == "--no-messages":
+    idx = 3
+    while idx < len(argv):
+        token = argv[idx]
+        if token == "--no-messages":
             include_messages = False
-        else:
-            print(
-                "Unknown option: "
-                f"{argv[3]}\nUse --no-messages or omit it."
-            )
-            sys.exit(1)
+            idx += 1
+            continue
+        if token == "--outdir":
+            if idx + 1 >= len(argv):
+                print("ERROR: --outdir requires a PATH argument")
+                sys.exit(1)
+            outdir = Path(argv[idx + 1])
+            idx += 2
+            continue
+        print(f"Unknown option: {token}")
+        print("Use: [--no-messages] [--outdir PATH] or omit them.")
+        sys.exit(1)
 
-    return products_path, sales_path, include_messages
+    return products_path, sales_path, include_messages, outdir
 
 
-def main() -> None:
-    """Entry point: parse args, run computation, write/print report."""
-    products_path, sales_path, include_messages = parse_args(sys.argv)
-
+def run(
+        products_path: Path,
+        sales_path: Path,
+        include_messages: bool) -> ReportData:
+    """End-to-end compute: load inputs, compute totals, create ReportData."""
     start = time.perf_counter()
 
-    # Collect non-fatal messages to include in the report
     warnings: List[str] = []
     errors: List[str] = []
 
@@ -206,7 +219,7 @@ def main() -> None:
     line_items, total_sum = compute_totals(catalogue, sales, warnings, errors)
     elapsed = time.perf_counter() - start
 
-    report = ReportData(
+    return ReportData(
         line_items=line_items,
         total_sum=total_sum,
         elapsed=elapsed,
@@ -215,15 +228,27 @@ def main() -> None:
         include_messages=include_messages,
     )
 
+
+def write_report(report: ReportData, outdir: Path) -> None:
+    """Print report and write SalesResults.txt to outdir."""
     output = format_report(report)
     print(output)
 
     try:
-        Path("SalesResults.txt").write_text(output, encoding="utf-8")
-        print("\nResults written to SalesResults.txt")
+        outdir.mkdir(parents=True, exist_ok=True)
+        out_path = outdir / "SalesResults.txt"
+        out_path.write_text(output, encoding="utf-8")
+        print(f"\nResults written to {out_path}")
     except OSError as exc:
         print(f"ERROR: Could not write SalesResults.txt: {exc}")
         sys.exit(1)
+
+
+def main() -> None:
+    """Entry point: parse args, run, and write report."""
+    products_path, sales_path, include_messages, outdir = parse_args(sys.argv)
+    report = run(products_path, sales_path, include_messages)
+    write_report(report, outdir)
 
 
 if __name__ == "__main__":
