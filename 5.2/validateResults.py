@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-"""validate_results.py
+# pylint: disable=invalid-name
+"""validateResults.py
 
 Validate computed sales results against expected totals for each test case.
 
@@ -30,7 +31,7 @@ import csv
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence
 
 TOTAL_PATTERN = re.compile(
     r"^\s*GRAND\s+TOTAL:\s*\$?([0-9_,]+(?:\.[0-9]{1,2})?)\s*$",
@@ -59,7 +60,8 @@ def parse_expected(path: Path) -> Dict[str, float]:
         line = line.strip()
         if not line or line.upper() == "TOTAL":
             continue
-        parts = re.split(r"\s+", line) if "\t" not in line else line.split("\t")
+        parts = re.split(
+            r"\s+", line) if "\t" not in line else line.split("\t")
         if len(parts) < 2:
             continue
         case, num = parts[0], parts[1]
@@ -142,16 +144,13 @@ def format_console(results: List[CaseResult], tolerance: float) -> str:
     lines.append("=" * 72)
     lines.append(f"Tolerance: ±{tolerance:.4f}")
     lines.append("")
-    lines.append(f"{'CASE':6} {'EXPECTED':>14} {'GOT':>14} {'DIFF':>12} {'PASS':>6}")
+    lines.append(
+        f"{'CASE':6} {'EXPECTED':>14} {'GOT':>14} {'DIFF':>12} {'PASS':>6}")
     lines.append("-" * 72)
     for r in results:
-        exp_str = "N/A" if r.expected != r.expected else f"${r.expected:,.2f}"  # NaN check
-        got_str = "N/A" if r.got is None else f"${r.got:,.2f}"
-        diff_str = "N/A" if r.diff is None else f"{r.diff:+,.2f}"
-        pass_str = "✅ Yes" if r.passed else "❌  No"
-        lines.append(
-            f"{r.case:6} {exp_str:>14} {got_str:>14} {diff_str:>12} {pass_str:>6}"
-        )
+        # NaN check
+        line = create_line(r)
+        lines.append(line)
     lines.append("-" * 72)
     passed_count = sum(1 for r in results if r.passed)
     lines.append(f"Passed: {passed_count}/{len(results)}")
@@ -159,10 +158,19 @@ def format_console(results: List[CaseResult], tolerance: float) -> str:
     return "\n".join(lines)
 
 
+def create_line(r):
+    exp = "N/A" if r.expected != r.expected else f"${r.expected:,.2f}"
+    got_str = "N/A" if r.got is None else f"${r.got:,.2f}"
+    diff = "N/A" if r.diff is None else f"{r.diff:+,.2f}"
+    passes = "✅ Yes" if r.passed else "❌  No"
+    return f"{r.case:6} {exp:>14} {got_str:>14} {diff:>12} {passes:>6}"
+
+
 def write_csv(results: List[CaseResult], csv_path: Path) -> None:
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
-        writer.writerow(["case", "expected", "got", "diff", "passed", "report_path"])
+        writer.writerow(["case", "expected", "got",
+                        "diff", "passed", "report_path"])
         for r in results:
             writer.writerow(
                 [
@@ -179,7 +187,7 @@ def write_csv(results: List[CaseResult], csv_path: Path) -> None:
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Validate SalesResults.txt totals against an expected results file."
+            "Validate SalesResults.txt totals against an expected results file"
         )
     )
     parser.add_argument(
@@ -218,7 +226,8 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
     expected_map = parse_expected(args.expected)
-    results = validate_cases(expected_map, args.cases, args.base_dir, args.tolerance)
+    results = validate_cases(expected_map, args.cases,
+                             args.base_dir, args.tolerance)
     report = format_console(results, args.tolerance)
     print(report)
 
