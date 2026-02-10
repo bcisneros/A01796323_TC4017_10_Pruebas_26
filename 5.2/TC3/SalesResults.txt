@@ -1,59 +1,96 @@
 SALES RESULTS REPORT
-============================================================
-Rustic breakfast                     200 × $21.32  = $4264.00
-Sandwich with salad                   23 × $22.48  = $517.04
-Raw legums                            11 × $17.11  = $188.21
-Fresh stawberry                      221 × $28.59  = $6318.39
-Raw legums                             2 × $17.11  = $34.22
-Green smoothie                       400 × $17.68  = $7072.00
-Cuban sandwiche                        2 × $18.50  = $37.00
-Hazelnut in black ceramic bowl         2 × $27.35  = $54.70
-Tomatoes                               1 × $26.03  = $26.03
-Plums                                250 × $19.18  = $4795.00
-Fresh blueberries                    334 × $21.01  = $7017.34
-Green smoothie                       300 × $17.68  = $5304.00
-Corn                                  68 × $13.55  = $921.40
-French fries                          33 × $18.32  = $604.56
-Ground beef meat burger               78 × $11.73  = $914.94
-Hazelnut in black ceramic bowl         2 × $27.35  = $54.70
-Sweet fresh stawberry                 87 × $29.45  = $2562.15
-Homemade bread                         1 × $17.48  = $17.48
-Smoothie with chia seeds              46 × $25.26  = $1161.96
-Corn                                   1 × $13.55  = $13.55
-Plums                                  2 × $19.18  = $38.36
-Green smoothie                         1 × $17.68  = $17.68
-Corn                                   2 × $13.55  = $27.10
-French fries                           4 × $18.32  = $73.28
-Ground beef meat burger               64 × $11.73  = $750.72
-Hazelnut in black ceramic bowl         2 × $27.35  = $54.70
-Sweet fresh stawberry                  3 × $29.45  = $88.35
-Homemade bread                       456 × $17.48  = $7970.88
-Smoothie with chia seeds               2 × $25.26  = $50.52
-Corn                                   5 × $13.55  = $67.75
-Plums                                645 × $19.18  = $12371.10
-Fresh blueberries                    -35 × $21.01  = $-735.35
-Green smoothie                         2 × $17.68  = $35.36
-Corn                                 465 × $13.55  = $6300.75
-Ground beef meat burger                4 × $11.73  = $46.92
-Hazelnut in black ceramic bowl         1 × $27.35  = $27.35
-Sweet fresh stawberry                131 × $29.45  = $3857.95
-Homemade bread                         9 × $17.48  = $157.32
-Smoothie with chia seeds              13 × $25.26  = $328.38
-Corn                                 678 × $13.55  = $9186.90
-Plums                                334 × $19.18  = $6406.12
-Fresh blueberries                    3445 × $21.01  = $72379.45
-Green smoothie                       -123 × $17.68  = $-2174.64
-Corn                                 445 × $13.55  = $6029.75
-============================================================
-GRAND TOTAL: $165235.37
+========================================================================
+01/12/23                                                      $50,950.26
+  SALE_ID: 1                                                   $4,969.25
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Rustic breakfast                      200     $21.32     $4264.00
+    2  Sandwich with salad                    23     $22.48      $517.04
+    3  Raw legums                             11     $17.11      $188.21
+------------------------------------------------------------------------
+  SALE_ID: 2                                                   $6,352.61
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Fresh stawberry                       221     $28.59     $6318.39
+    2  Raw legums                              2     $17.11       $34.22
+------------------------------------------------------------------------
+  SALE_ID: 3                                                   $7,163.70
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Green smoothie                        400     $17.68     $7072.00
+    2  Cuban sandwiche                         2     $18.50       $37.00
+    3  Hazelnut in black ceramic bowl          2     $27.35       $54.70
+------------------------------------------------------------------------
+  SALE_ID: 4                                                  $11,838.37
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Tomatoes                                1     $26.03       $26.03
+    2  Plums                                 250     $19.18     $4795.00
+    3  Fresh blueberries                     334     $21.01     $7017.34
+------------------------------------------------------------------------
+  SALE_ID: 5                                                   $6,829.96
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Green smoothie                        300     $17.68     $5304.00
+    2  Corn                                   68     $13.55      $921.40
+    3  French fries                           33     $18.32      $604.56
+------------------------------------------------------------------------
+  SALE_ID: 6                                                   $4,763.14
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Ground beef meat burger                78     $11.73      $914.94
+    2  Hazelnut in black ceramic bowl          2     $27.35       $54.70
+    3  Sweet fresh stawberry                  87     $29.45     $2562.15
+    4  Homemade bread                          1     $17.48       $17.48
+    5  Smoothie with chia seeds               46     $25.26     $1161.96
+    6  Corn                                    1     $13.55       $13.55
+    7  Plums                                   2     $19.18       $38.36
+------------------------------------------------------------------------
+  SALE_ID: 7                                                     $923.48
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Green smoothie                          1     $17.68       $17.68
+    2  Corn                                    2     $13.55       $27.10
+    3  French fries                            4     $18.32       $73.28
+    4  Ground beef meat burger                64     $11.73      $750.72
+    5  Hazelnut in black ceramic bowl          2     $27.35       $54.70
+------------------------------------------------------------------------
+  SALE_ID: 8                                                   $8,109.75
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Sweet fresh stawberry                   3     $29.45       $88.35
+    2  Homemade bread                        456     $17.48     $7970.88
+    3  Smoothie with chia seeds                2     $25.26       $50.52
+------------------------------------------------------------------------
+
+02/12/23                                                     $114,285.11
+  SALE_ID: 8                                                  $11,738.86
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Corn                                    5     $13.55       $67.75
+    2  Plums                                 645     $19.18    $12371.10
+    3  Fresh blueberries                     -35     $21.01     $-735.35
+    4  Green smoothie                          2     $17.68       $35.36
+------------------------------------------------------------------------
+  SALE_ID: 9                                                  $10,390.29
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Corn                                  465     $13.55     $6300.75
+    2  Ground beef meat burger                 4     $11.73       $46.92
+    3  Hazelnut in black ceramic bowl          1     $27.35       $27.35
+    4  Sweet fresh stawberry                 131     $29.45     $3857.95
+    5  Homemade bread                          9     $17.48      $157.32
+------------------------------------------------------------------------
+  SALE_ID: 10                                                 $92,155.96
+    #  PRODUCT                               QTY      PRICE     SUBTOTAL
+    1  Smoothie with chia seeds               13     $25.26      $328.38
+    2  Corn                                  678     $13.55     $9186.90
+    3  Plums                                 334     $19.18     $6406.12
+    4  Fresh blueberries                    3445     $21.01    $72379.45
+    5  Green smoothie                       -123     $17.68    $-2174.64
+    6  Corn                                  445     $13.55     $6029.75
+------------------------------------------------------------------------
+
+========================================================================
+GRAND TOTAL:                                                 $165,235.37
 Time elapsed: 0.000 seconds
-============================================================
+========================================================================
 WARNINGS
-------------------------------------------------------------
+------------------------------------------------------------------------
 (none)
 
 ERRORS
-------------------------------------------------------------
+------------------------------------------------------------------------
 - Product not found in catalogue: Elotes
 - Product not found in catalogue: Frijoles
-============================================================
+========================================================================

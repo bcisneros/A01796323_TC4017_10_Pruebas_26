@@ -15,6 +15,13 @@ Pass --no-messages to hide those sections.
 
 Use --outdir PATH to choose the output directory for SalesResults.txt.
 If not provided, the current directory is used.
+
+Layout:
+- Group by SALE_Date, then by SALE_ID.
+- Date line shows the total for that date (right-aligned).
+- Sale header shows sale total (right-aligned).
+- Lines within a sale are numbered and show Product, Qty, Price, Subtotal.
+- Grand Total at the end (right-aligned).
 """
 
 import json
@@ -56,8 +63,10 @@ def load_catalogue(path: Path, warnings: List[str]) -> Dict[str, float]:
             title = str(item["title"]).strip()
             price = float(item["price"])
         except (KeyError, TypeError, ValueError):
-            warnings.append(f"Invalid catalogue entry skipped: {item}")
+            msg = f"Invalid catalogue entry skipped: {item}"
+            warnings.append(msg)
             continue
+
         catalogue[title] = price
 
     return catalogue
@@ -88,13 +97,26 @@ def compute_totals(
 ) -> Tuple[List[dict], float]:
     """Compute per-line totals and a grand total from the inputs.
 
+    line_items schema (per line):
+        {
+            "date": str,
+            "sale_id": int,
+            "product": str,
+            "qty": int,
+            "price": float,
+            "subtotal": float
+        }
+
     Non-fatal issues are appended to `warnings` or `errors`.
     """
     line_items: List[dict] = []
     total_sum = 0.0
 
     for idx, record in enumerate(sales):
+        # Validate expected record fields
         try:
+            sale_date = str(record["SALE_Date"]).strip()
+            sale_id = int(record["SALE_ID"])
             product = str(record["Product"]).strip()
             qty = int(record["Quantity"])
         except (KeyError, TypeError, ValueError):
@@ -109,41 +131,104 @@ def compute_totals(
             errors.append(f"Product not found in catalogue: {product}")
             continue
 
-        line_total = price * qty
-        total_sum += line_total
+        subtotal = price * qty
+        total_sum += subtotal
         line_items.append(
             {
+                "date": sale_date,
+                "sale_id": sale_id,
                 "product": product,
                 "qty": qty,
                 "price": price,
-                "total": line_total
+                "subtotal": subtotal,
             }
         )
 
     return line_items, total_sum
 
 
+def _group_by_date_then_sale(line_items: List[dict]) -> Dict[str, Dict[int, List[dict]]]:
+    """Return nested grouping: date -> sale_id -> list of items."""
+    grouped: Dict[str, Dict[int, List[dict]]] = {}
+    for item in line_items:
+        date = item["date"]
+        sale_id = item["sale_id"]
+        grouped.setdefault(date, {}).setdefault(sale_id, []).append(item)
+    return grouped
+
+
 def format_report(report: ReportData) -> str:
-    """Return a human-readable multi-line report string."""
+    """Return the report string grouped by date then sale, with aligned totals."""
+    W = 72  # max content width for neat wrapping
     lines: List[str] = []
     lines.append("SALES RESULTS REPORT")
-    lines.append("=" * 60)
+    lines.append("=" * W)
 
-    for item in report.line_items:
-        lines.append(
-            f"{item['product']:35}  "
-            f"{item['qty']:3d} × ${item['price']:.2f}  "
-            f"= ${item['total']:.2f}"
-        )
+    # Group items
+    grouped = _group_by_date_then_sale(report.line_items)
 
-    lines.append("=" * 60)
-    lines.append(f"GRAND TOTAL: ${report.total_sum:.2f}")
+    # Sort dates ascending as strings; modify if you need custom sort
+    for date in sorted(grouped.keys()):
+        # Compute total for the whole date
+        date_total = 0.0
+        for sale_items in grouped[date].values():
+            date_total += sum(li["subtotal"] for li in sale_items)
+
+        date_total_str = f"${date_total:,.2f}"
+        # Date header with right-aligned total
+        date_hdr = f"{date}"
+        pad = max(1, W - len(date_hdr) - len(date_total_str))
+        lines.append(f"{date_hdr}{' ' * pad}{date_total_str}")
+
+        # Per-sale sections for this date
+        for sale_id in sorted(grouped[date].keys()):
+            items = grouped[date][sale_id]
+            sale_total = sum(li["subtotal"] for li in items)
+            sale_total_str = f"${sale_total:,.2f}"
+
+            sale_hdr = f"  SALE_ID: {sale_id}"
+            pad2 = max(1, W - len(sale_hdr) - len(sale_total_str))
+            lines.append(f"{sale_hdr}{' ' * pad2}{sale_total_str}")
+
+            # Table header for the sale
+            lines.append(
+                f"{'':2}{'#':>3}  {'PRODUCT':35} "
+                f"{'QTY':>5} {'PRICE':>10} {'SUBTOTAL':>12}"
+            )
+
+            # Table rows
+            for idx, li in enumerate(items, start=1):
+                prod = li["product"]
+                qty = li["qty"]
+                price = li["price"]
+                price_str = f"${price:.2f}"
+                sub = li["subtotal"]
+                sub_str = f"${sub:.2f}"
+                lines.append(
+                    f"{'':2}{idx:>3}  {prod:35.35} "
+                    f"{qty:>5d} {price_str:>10} {sub_str:>12}"
+                )
+
+            # Spacer between sales
+            lines.append("-" * W)
+
+        # Blank line between dates
+        lines.append("")
+
+    # Grand total + elapsed
+    grand_str = f"${report.total_sum:,.2f}"
+    lines.append("=" * W)
+    # Right-align the grand total label/amount
+    label = "GRAND TOTAL:"
+    pad_gt = max(1, W - len(label) - len(grand_str))
+    lines.append(f"{label}{' ' * pad_gt}{grand_str}")
     lines.append(f"Time elapsed: {report.elapsed:.3f} seconds")
-    lines.append("=" * 60)
+    lines.append("=" * W)
 
     if report.include_messages:
+        # WARNINGS
         lines.append("WARNINGS")
-        lines.append("-" * 60)
+        lines.append("-" * W)
         if report.warnings:
             for msg in report.warnings:
                 lines.append(f"- {msg}")
@@ -151,14 +236,15 @@ def format_report(report: ReportData) -> str:
             lines.append("(none)")
         lines.append("")
 
+        # ERRORS
         lines.append("ERRORS")
-        lines.append("-" * 60)
+        lines.append("-" * W)
         if report.errors:
             for msg in report.errors:
                 lines.append(f"- {msg}")
         else:
             lines.append("(none)")
-        lines.append("=" * 60)
+        lines.append("=" * W)
 
     return "\n".join(lines)
 
@@ -204,10 +290,7 @@ def parse_args(argv: List[str]) -> Tuple[Path, Path, bool, Path]:
     return products_path, sales_path, include_messages, outdir
 
 
-def run(
-        products_path: Path,
-        sales_path: Path,
-        include_messages: bool) -> ReportData:
+def run(products_path: Path, sales_path: Path, include_messages: bool) -> ReportData:
     """End-to-end compute: load inputs, compute totals, create ReportData."""
     start = time.perf_counter()
 
