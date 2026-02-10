@@ -147,7 +147,8 @@ def compute_totals(
     return line_items, total_sum
 
 
-def _group_by_date_then_sale(line_items: List[dict]) -> Dict[str, Dict[int, List[dict]]]:
+def _group_by_date_then_sale(
+        line_items: List[dict]) -> Dict[str, Dict[int, List[dict]]]:
     """Return nested grouping: date -> sale_id -> list of items."""
     grouped: Dict[str, Dict[int, List[dict]]] = {}
     for item in line_items:
@@ -158,7 +159,9 @@ def _group_by_date_then_sale(line_items: List[dict]) -> Dict[str, Dict[int, List
 
 
 def format_report(report: ReportData) -> str:
-    """Return the report string grouped by date then sale, with aligned totals."""
+    """
+    Return the report string grouped by date then sale, with aligned totals.
+    """
     W = 72  # max content width for neat wrapping
     lines: List[str] = []
     lines.append("SALES RESULTS REPORT")
@@ -290,7 +293,10 @@ def parse_args(argv: List[str]) -> Tuple[Path, Path, bool, Path]:
     return products_path, sales_path, include_messages, outdir
 
 
-def run(products_path: Path, sales_path: Path, include_messages: bool) -> ReportData:
+def run(
+        products_path: Path,
+        sales_path: Path,
+        include_messages: bool) -> ReportData:
     """End-to-end compute: load inputs, compute totals, create ReportData."""
     start = time.perf_counter()
 
