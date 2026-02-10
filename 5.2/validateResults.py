@@ -41,6 +41,24 @@ TOTAL_PATTERN = re.compile(
 
 @dataclass(frozen=True)
 class CaseResult:
+    """Container holding the validation outcome for a single test case.
+
+    Attributes
+    ----------
+    case : str
+        The case name (e.g., "TC1").
+    expected : float
+        The expected total read from the expected results file.
+    got : Optional[float]
+        The computed total parsed from the case's SalesResults.txt, or None if
+        it could not be found/parsed.
+    diff : Optional[float]
+        The difference `got - expected`, or None when `got` is None.
+    passed : bool
+        Whether the absolute difference is within the allowed tolerance.
+    path : Path
+        The path to the SalesResults.txt inspected for this case.
+    """
     case: str
     expected: float
     got: Optional[float]
@@ -50,10 +68,20 @@ class CaseResult:
 
 
 def parse_expected(path: Path) -> Dict[str, float]:
-    """Parse expected totals from a simple TSV-like file.
+    """Parse expected totals from a simple TSV/whitespace file.
 
-    Ignores the header line 'TOTAL' if present.
-    Each subsequent non-empty line must be: <CASE> <tab> <number>
+    Ignores the header line 'TOTAL' if present. Each subsequent non-empty line
+    must be: <CASE><TAB><number> (tabs) or <CASE> <number> (whitespace).
+
+    Parameters
+    ----------
+    path : Path
+        Path to the expected results text file.
+
+    Returns
+    -------
+    Dict[str, float]
+        Mapping of case name to expected numeric total.
     """
     mapping: Dict[str, float] = {}
     for line in path.read_text(encoding="utf-8").splitlines():
@@ -74,12 +102,23 @@ def parse_expected(path: Path) -> Dict[str, float]:
 
 
 def extract_total(report_path: Path) -> Optional[float]:
-    """Extract the grand total from a SalesResults.txt file."""
+    """Extract the grand total from a SalesResults.txt file.
+
+    Parameters
+    ----------
+    report_path : Path
+        Path to the case's SalesResults.txt.
+
+    Returns
+    -------
+    Optional[float]
+        The parsed grand total, or None if not found/parsable.
+    """
     text = report_path.read_text(encoding="utf-8", errors="ignore")
     for line in text.splitlines():
-        m = TOTAL_PATTERN.match(line)
-        if m:
-            raw = m.group(1).replace(",", "").replace("_", "")
+        match = TOTAL_PATTERN.match(line)
+        if match:
+            raw = match.group(1).replace(",", "").replace("_", "")
             try:
                 return float(raw)
             except ValueError:
@@ -93,6 +132,24 @@ def validate_cases(
     base_dir: Path,
     tolerance: float,
 ) -> List[CaseResult]:
+    """Validate the computed totals for a list of cases.
+
+    Parameters
+    ----------
+    expected_map : Dict[str, float]
+        Mapping of case name to expected total.
+    cases : Sequence[str]
+        Sequence of case names (e.g., ["TC1", "TC2", "TC3"]).
+    base_dir : Path
+        Base directory containing <CASE>/SalesResults.txt.
+    tolerance : float
+        Allowed absolute difference between expected and actual.
+
+    Returns
+    -------
+    List[CaseResult]
+        A list of results, one per case.
+    """
     results: List[CaseResult] = []
     for case in cases:
         report_path = base_dir / case / "SalesResults.txt"
@@ -138,7 +195,41 @@ def validate_cases(
     return results
 
 
+def create_line(r: CaseResult) -> str:
+    """Format a single table row for console output.
+
+    Parameters
+    ----------
+    r : CaseResult
+        The case result to render.
+
+    Returns
+    -------
+    str
+        A formatted, fixed-width line containing Expected / Got / Diff / Pass.
+    """
+    exp = "N/A" if r.expected != r.expected else f"${r.expected:,.2f}"
+    got = "N/A" if r.got is None else f"${r.got:,.2f}"
+    diff = "N/A" if r.diff is None else f"{r.diff:+,.2f}"
+    passes = "✅ Yes" if r.passed else "❌  No"
+    return f"{r.case:6} {exp:>14} {got:>14} {diff:>12} {passes:>6}"
+
+
 def format_console(results: List[CaseResult], tolerance: float) -> str:
+    """Create the multi-line console report for all cases.
+
+    Parameters
+    ----------
+    results : List[CaseResult]
+        Case results to render.
+    tolerance : float
+        Tolerance used for pass/fail decisions (displayed in header).
+
+    Returns
+    -------
+    str
+        The report text to print to stdout.
+    """
     lines: List[str] = []
     lines.append("EXPECTED VS ACTUAL RESULTS")
     lines.append("=" * 72)
@@ -147,44 +238,57 @@ def format_console(results: List[CaseResult], tolerance: float) -> str:
     lines.append(
         f"{'CASE':6} {'EXPECTED':>14} {'GOT':>14} {'DIFF':>12} {'PASS':>6}")
     lines.append("-" * 72)
-    for r in results:
-        # NaN check
-        line = create_line(r)
-        lines.append(line)
+    for res in results:
+        lines.append(create_line(res))
     lines.append("-" * 72)
-    passed_count = sum(1 for r in results if r.passed)
+    passed_count = sum(1 for res in results if res.passed)
     lines.append(f"Passed: {passed_count}/{len(results)}")
     lines.append("=" * 72)
     return "\n".join(lines)
 
 
-def create_line(r):
-    exp = "N/A" if r.expected != r.expected else f"${r.expected:,.2f}"
-    got_str = "N/A" if r.got is None else f"${r.got:,.2f}"
-    diff = "N/A" if r.diff is None else f"{r.diff:+,.2f}"
-    passes = "✅ Yes" if r.passed else "❌  No"
-    return f"{r.case:6} {exp:>14} {got_str:>14} {diff:>12} {passes:>6}"
-
-
 def write_csv(results: List[CaseResult], csv_path: Path) -> None:
+    """Write machine-readable results to a CSV file.
+
+    Columns: case, expected, got, diff, passed, report_path
+
+    Parameters
+    ----------
+    results : List[CaseResult]
+        The results to write.
+    csv_path : Path
+        Destination CSV path (parent folders will be created by caller).
+    """
     with csv_path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
         writer.writerow(["case", "expected", "got",
                         "diff", "passed", "report_path"])
-        for r in results:
+        for res in results:
             writer.writerow(
                 [
-                    r.case,
-                    r.expected,
-                    "" if r.got is None else r.got,
-                    "" if r.diff is None else r.diff,
-                    r.passed,
-                    str(r.path),
+                    res.case,
+                    res.expected,
+                    "" if res.got is None else res.got,
+                    "" if res.diff is None else res.diff,
+                    res.passed,
+                    str(res.path),
                 ]
             )
 
 
 def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
+    """Parse command-line arguments for the results validator.
+
+    Parameters
+    ----------
+    argv : Optional[Sequence[str]]
+        Raw argv; if None, argparse uses sys.argv.
+
+    Returns
+    -------
+    argparse.Namespace
+        Parsed arguments namespace.
+    """
     parser = argparse.ArgumentParser(
         description=(
             "Validate SalesResults.txt totals against an expected results file"
@@ -224,6 +328,19 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
+    """
+    Entry point: parse args, validate cases, print and (optionally) write CSV.
+
+    Parameters
+    ----------
+    argv : Optional[Sequence[str]]
+        Raw argv; if None, argparse uses sys.argv.
+
+    Returns
+    -------
+    int
+        Process exit code: 0 on success, non-zero on I/O/CSV failures.
+    """
     args = parse_args(argv)
     expected_map = parse_expected(args.expected)
     results = validate_cases(expected_map, args.cases,
