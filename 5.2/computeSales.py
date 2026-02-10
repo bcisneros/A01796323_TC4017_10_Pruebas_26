@@ -186,12 +186,7 @@ def format_report(report: ReportData) -> str:
         # Per-sale sections for this date
         for sale_id in sorted(grouped[date].keys()):
             items = grouped[date][sale_id]
-            sale_total = sum(li["subtotal"] for li in items)
-            sale_total_str = f"${sale_total:,.2f}"
-
-            sale_hdr = f"  SALE_ID: {sale_id}"
-            pad2 = max(1, W - len(sale_hdr) - len(sale_total_str))
-            lines.append(f"{sale_hdr}{' ' * pad2}{sale_total_str}")
+            add_sale_header(W, lines, sale_id, items)
 
             # Table header for the sale
             lines.append(
@@ -201,16 +196,7 @@ def format_report(report: ReportData) -> str:
 
             # Table rows
             for idx, li in enumerate(items, start=1):
-                prod = li["product"]
-                qty = li["qty"]
-                price = li["price"]
-                price_str = f"${price:.2f}"
-                sub = li["subtotal"]
-                sub_str = f"${sub:.2f}"
-                lines.append(
-                    f"{'':2}{idx:>3}  {prod:35.35} "
-                    f"{qty:>5d} {price_str:>10} {sub_str:>12}"
-                )
+                add_product_line(lines, idx, li)
 
             # Spacer between sales
             lines.append("-" * W)
@@ -250,6 +236,34 @@ def format_report(report: ReportData) -> str:
         lines.append("=" * W)
 
     return "\n".join(lines)
+
+
+def add_sale_header(W, lines, sale_id, items):
+    """
+    Append sale header with calculated total
+    """
+    sale_total = sum(li["subtotal"] for li in items)
+    sale_total_str = f"${sale_total:,.2f}"
+
+    sale_hdr = f"  SALE_ID: {sale_id}"
+    pad2 = max(1, W - len(sale_hdr) - len(sale_total_str))
+    lines.append(f"{sale_hdr}{' ' * pad2}{sale_total_str}")
+
+
+def add_product_line(lines, idx, li):
+    """
+    Append product item line with all details
+    """
+    prod = li["product"]
+    qty = li["qty"]
+    price = li["price"]
+    price_str = f"${price:.2f}"
+    sub = li["subtotal"]
+    sub_str = f"${sub:.2f}"
+    lines.append(
+        f"{'':2}{idx:>3}  {prod:35.35} "
+        f"{qty:>5d} {price_str:>10} {sub_str:>12}"
+    )
 
 
 def parse_args(argv: List[str]) -> Tuple[Path, Path, bool, Path]:
