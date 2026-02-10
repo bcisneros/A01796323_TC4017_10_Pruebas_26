@@ -8,7 +8,7 @@ This README documents the work completed for **Activity 5.2**, including:
 - Evidence for Pylint, Flake8, and test case execution
 - Rubric‑aligned scoring information
 
-## 1. Overview of the Program
+## Overview of the Program
 
 The main script, `computeSales.py`, processes two JSON files:
 
@@ -37,7 +37,7 @@ python computeSales.py products.json sales.json [--no-messages] [--outdir PATH]
   - `--outdir PATH` to choose output destination
 - Fully compliant with **PEP 8**, **Pylint**, and **Flake8** requirements
 
-## 2. Project Structure
+## Project Structure
 
 ```
 .
@@ -67,9 +67,9 @@ Where:
 - `validateResults.py`: additional script to validate the actual results vs. expected results
 - `run.sh`: utility script to run all test cases and perform the validations
 
-## 3. Running the Program
+## Running the Program and Validate Results
 
-### 3.1 Compute Sales for a Test Case
+### Compute Sales for a Test Case
 
 ```
 $ python computeSales.py TC1/TC1.ProductList.json TC1/TC1.Sales.json --outdir TC1
@@ -179,7 +179,7 @@ ERRORS
 
 > **Note**: Repeat for each Test Case by changing the sales file and output directory
 
-### 3.2 Validate Test Cases Against Expected Results
+### Validate Test Cases Against Expected Results
 
 If you want to verify the results automatically, use the following command:
 
@@ -188,6 +188,7 @@ $ python validateResults.py --expected Results.txt --cases TC1 TC2 TC3
 ```
 
 It produces the following report:
+
 ```
 EXPECTED VS ACTUAL RESULTS
 ========================================================================
@@ -203,7 +204,7 @@ Passed: 3/3
 ========================================================================
 ```
 
-## 4. Static Analysis Evidence
+## Static Analysis Evidence
 
 ### Pylint / PEP 8 Compliance
 
@@ -212,8 +213,27 @@ $ pylint computeSales.py
 
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
+
 $ pylint validateResults.py
 
 --------------------------------------------------------------------
 Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 ```
+
+### Flake8 Compliance
+
+```
+$ flake8 computeSales.py
+(no output)
+
+$ flake8 validateResults.py
+(no output)
+```
+
+## Conclusions
+
+- The program fully satisfies all functional and technical requirements.
+- The layout provides clear per-date and per-sale grouping, with aligned totals.
+- Static analysis tools (Pylint & Flake8) report **zero errors**, satisfying PEP 8 style standards.
+- All three test cases computed correctly and were verified with the automated validator.
+- Complete documentation and validation scripts are included to simplify evaluation.
