@@ -61,7 +61,7 @@ python computeSales.py products.json sales.json [--no-messages] [--outdir PATH]
 Where:
 
 - `computeSales.py`: is the Python program that creates the Sales Report from Product catalog and Sales entries
-- `TC{N}` folders: contains the test cases `TC{N}.Sales.json` and the output of the program for each test case inside `SalesResults.txt``
+- `TC{N}` folders: contains the test cases `TC{N}.Sales.json` and the output of the program for each test case inside `SalesResults.txt`
   > Note: All test cases share the same product catalog (`TC1.ProductList.json`)
 - `Results.txt`: contains the expected results for each test case
 - `validateResults.py`: additional script to validate the actual results vs. expected results
