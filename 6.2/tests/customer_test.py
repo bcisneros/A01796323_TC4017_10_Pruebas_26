@@ -5,37 +5,17 @@ behaviors, using an isolated temporary JSON store per test.
 """
 
 # Keep tests lightweight—method names tell the story.
-# Document at module/class level; avoid noisy method docstrings.
 # pylint: disable=missing-function-docstring
 
-import tempfile
-import unittest
-from contextlib import ExitStack
-from pathlib import Path
-
-from reservation.storage import JsonStore
-from reservation.service import ReservationService
+from tests.support import JsonStoreTestCase
 
 
-class CustomerTest(unittest.TestCase):
+class CustomerTest(JsonStoreTestCase):
     """Customer CRUD scenarios using a per-test temporary JSON store."""
 
     def setUp(self):
-        # Manage resource-allocating ops via ExitStack (fixes pylint R1732)
-        self._stack = ExitStack()
-        self.addCleanup(self._stack.close)
-
-        # Create a per-test temporary directory within the managed stack
-        self.tmp = self._stack.enter_context(tempfile.TemporaryDirectory())
-
-        base = Path(self.tmp)
-        self.store = JsonStore(base)
-        self.svc = ReservationService(self.store)
-
-        # Per-test isolated data files
-        (base / "hotels.json").write_text("[]", encoding="utf-8")
-        (base / "customers.json").write_text("[]", encoding="utf-8")
-        (base / "reservations.json").write_text("[]", encoding="utf-8")
+        super().setUp()
+        # No baseline needed for the first test; others create explicitly.
 
     # Happy path: create and read back
     def test_create_and_get_customer(self):
