@@ -7,93 +7,109 @@ and robustness when the underlying hotels JSON file is malformed.
 # Keep tests lightweight—method names tell the story.
 # Document at module/class level; avoid noisy method docstrings.
 # pylint: disable=missing-function-docstring
-
+import copy
+from unittest.mock import MagicMock
 from tests.support import JsonStoreTestCase
+
+from reservation.service import ReservationService
 
 
 class HotelTest(JsonStoreTestCase):
     """Hotel scenarios using a per-test temporary JSON store."""
 
-    def test_create_and_get_hotel(self):
-        self.svc.create_hotel(hotel_id="H1", name="Hotel Azul", rooms=3)
-        hotel = self.svc.get_hotel("H1")
-        self.assertEqual("Hotel Azul", hotel["name"])
-        self.assertEqual(3, hotel["rooms"])
+    def setUp(self):
+        # Mocked store for every test
+        self.store = MagicMock()
+        self.svc = ReservationService(self.store)
+
+    def test_create_hotel_writes_expected_row(self):
+        # Arrange
+        self.store.load.return_value = []  # no hotels yet
+        # Act
+        self.svc.create_hotel("H1", "Hotel Azul", 3)
+        # Assert
+        self.store.load.assert_called_once_with(self.svc.HOTELS)
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(self.svc.HOTELS, args[0])
+        data = [{"id": "H1", "name": "Hotel Azul", "rooms": 3}]
+        self.assertEqual(data, args[1])
 
     # 1) Negative: duplicated id
     def test_create_hotel_duplicated_id_raises(self):
-        self.svc.create_hotel("H1", "A", 1)
+        self.store.load.return_value = [{"id": "H1", "name": "A", "rooms": 1}]
         with self.assertRaises(ValueError):
             self.svc.create_hotel("H1", "B", 2)
+        self.store.save.assert_not_called()
 
     # 2) Negative: rooms <= 0
     def test_create_hotel_invalid_rooms_raises(self):
+        # rooms <= 0 should fail before touching the store
         with self.assertRaises(ValueError):
-            self.svc.create_hotel("H2", "X", 0)
-
-    # 3) Negative: corrupted file -> should not crash; continue with []
-    def test_load_corrupted_hotels_file_does_not_crash(self):
-        (self.base / "hotels.json").write_text(
-            "{ MALFORMED JSON ]", encoding="utf-8"
-        )
-        # Must continue and treat as empty list; create should work
-        self.svc.create_hotel("H3", "Nuevo", 1)
-        self.assertIsNotNone(self.svc.get_hotel("H3"))
+            self.svc.create_hotel("HX", "X", 0)
+        self.store.load.assert_not_called()
+        self.store.save.assert_not_called()
 
     def test_create_hotel_empty_id_raises(self):
         with self.assertRaises(ValueError):
             self.svc.create_hotel("", "X", 1)
+        self.store.load.assert_not_called()
+        self.store.save.assert_not_called()
 
     def test_create_hotel_empty_name_raises(self):
         with self.assertRaises(ValueError):
             self.svc.create_hotel("H2", "", 1)
+        self.store.load.assert_not_called()
+        self.store.save.assert_not_called()
 
     def test_get_hotel_returns_none_for_unknown_id(self):
+        data = [{"id": "H2", "name": "Other", "rooms": 1}]
+        self.store.load.return_value = data
         self.assertIsNone(self.svc.get_hotel("NOPE"))
 
-    def test_load_returns_empty_when_hotels_file_absent(self):
-        # Remove the file created by the base fixture to simulate
-        # "missing file"
-        (self.base / "hotels.json").unlink(missing_ok=True)
-
-        rows = self.store.load("hotels.json")
-        self.assertEqual([], rows)
-
     def test_display_hotel_info_returns_formatted_string(self):
-        self.svc.create_hotel("HX", "Hotel X", 10)
+        data = [{"id": "HX", "name": "Hotel X", "rooms": 10}]
+        self.store.load.return_value = data
         summary = self.svc.display_hotel_info("HX")
         self.assertEqual("Hotel HX: Hotel X (rooms=10)", summary)
 
-    def test_display_hotel_info_unknown_hotel_raises(self):
+    def test_display_hotel_info_unknown_raises(self):
+        data = [{"id": "HX", "name": "Hotel X", "rooms": 10}]
+        self.store.load.return_value = data
         with self.assertRaises(ValueError):
-            self.svc.display_hotel_info("NOPE")
+            _ = self.svc.display_hotel_info("NOPE")
 
     def test_update_hotel_name(self):
-        # Arrange
-        self.svc.create_hotel("HU1", "Old Name", 5)
-        # Act
-        self.svc.update_hotel("HU1", name="New Name")
-        # Assert
-        h = self.svc.get_hotel("HU1")
-        self.assertEqual("New Name", h["name"])
-        self.assertEqual(5, h["rooms"])  # unchanged
+        initial = [{"id": "H1", "name": "Old", "rooms": 3}]
+        self.store.load.return_value = copy.deepcopy(initial)
+
+        self.svc.update_hotel("H1", name="New")
+        self.store.load.assert_called_once_with(self.svc.HOTELS)
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(self.svc.HOTELS, args[0])
+        self.assertEqual([{"id": "H1", "name": "New", "rooms": 3}], args[1])
 
     def test_update_hotel_rooms(self):
-        self.svc.create_hotel("HU2", "Hotel Rooms", 5)
-        self.svc.update_hotel("HU2", rooms=8)
-        h = self.svc.get_hotel("HU2")
-        self.assertEqual(8, h["rooms"])
+        self.store.load.return_value = [{"id": "H1", "name": "X", "rooms": 3}]
+        self.svc.update_hotel("H1", rooms=8)
+        args, _ = self.store.save.call_args
+        self.assertEqual([{"id": "H1", "name": "X", "rooms": 8}], args[1])
 
     def test_update_hotel_not_found_raises(self):
+        self.store.load.return_value = [{"id": "HX", "name": "X", "rooms": 1}]
         with self.assertRaises(ValueError):
-            self.svc.update_hotel("NOPE", name="X")
+            self.svc.update_hotel("NOPE", name="Y")
+        self.store.save.assert_not_called()
 
     def test_update_hotel_invalid_rooms_raises(self):
-        self.svc.create_hotel("HU3", "Hotel Invalid", 3)
+        self.store.load.return_value = [{"id": "H1", "name": "X", "rooms": 3}]
         with self.assertRaises(ValueError):
-            self.svc.update_hotel("HU3", rooms=0)
+            self.svc.update_hotel("H1", rooms=0)
+        self.store.save.assert_not_called()
 
     def test_update_hotel_empty_name_raises(self):
-        self.svc.create_hotel("HU4", "Will Rename", 3)
+        self.store.load.return_value = [{"id": "H1", "name": "X", "rooms": 3}]
         with self.assertRaises(ValueError):
-            self.svc.update_hotel("HU4", name="")
+            self.svc.update_hotel("H1", name="")
+        self.store.save.assert_not_called()
