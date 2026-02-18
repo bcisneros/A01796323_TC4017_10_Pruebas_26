@@ -53,7 +53,8 @@ class JsonStore:
             name: File name to load (e.g., 'customers.json').
 
         Returns:
-            list[dict]: Parsed list from the JSON file, or [] if missing/invalid.
+            list[dict]: Parsed list from the JSON file, or [] if
+            missing/invalid.
         """
         file_path = self._file(name)
         if not file_path.exists():
