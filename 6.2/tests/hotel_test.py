@@ -8,8 +8,6 @@ and robustness when the underlying hotels JSON file is malformed.
 # Document at module/class level; avoid noisy method docstrings.
 # pylint: disable=missing-function-docstring
 
-from pathlib import Path
-
 from tests.support import JsonStoreTestCase
 
 
@@ -35,7 +33,9 @@ class HotelTest(JsonStoreTestCase):
 
     # 3) Negative: corrupted file -> should not crash; continue with []
     def test_load_corrupted_hotels_file_does_not_crash(self):
-        (self.base / "hotels.json").write_text("{ MALFORMED JSON ]", encoding="utf-8")
+        (self.base / "hotels.json").write_text(
+            "{ MALFORMED JSON ]", encoding="utf-8"
+        )
         # Must continue and treat as empty list; create should work
         self.svc.create_hotel("H3", "Nuevo", 1)
         self.assertIsNotNone(self.svc.get_hotel("H3"))

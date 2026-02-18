@@ -7,7 +7,6 @@ rules, and behavior when the underlying JSON file is malformed.
 # Keep tests lightweight—method names tell the story.
 # pylint: disable=missing-function-docstring
 
-from pathlib import Path
 from tests.support import JsonStoreTestCase
 
 
@@ -62,5 +61,7 @@ class ReservationTest(JsonStoreTestCase):
             self.svc.cancel_reservation("RX")
 
     def test_corrupted_reservations_file_continue(self):
-        (self.base / "reservations.json").write_text("{ BAD JSON ]", encoding="utf-8")
+        (self.base / "reservations.json").write_text(
+            "{ BAD JSON ]", encoding="utf-8"
+        )
         self.svc.create_reservation("R10", "H1", "C1", 2)
