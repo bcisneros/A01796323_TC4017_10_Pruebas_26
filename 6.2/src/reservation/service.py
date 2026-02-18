@@ -3,6 +3,7 @@ from typing import Dict, List, Optional
 
 from .storage import JsonStore
 
+
 class ReservationService:
     """Business operations for Hotel, Customer, Reservation."""
 
@@ -12,6 +13,7 @@ class ReservationService:
 
     def __init__(self, store: JsonStore) -> None:
         self.store = store
+
     # -------- Helpers internos --------
     def _load_hotels(self) -> List[Dict]:
         return self.store.load(self.HOTELS)
@@ -24,6 +26,7 @@ class ReservationService:
 
     def _save_reservations(self, rows: List[Dict]) -> None:
         self.store.save(self.RESERVATIONS, rows)
+
     # ------- Hotels -------
     def create_hotel(self, hotel_id: str, name: str, rooms: int) -> None:
         if not hotel_id or not name or rooms <= 0:
@@ -40,7 +43,7 @@ class ReservationService:
             if h["id"] == hotel_id:
                 return h
         return None
-    
+
     # -------- Customers --------
     def create_customer(self, customer_id: str, name: str, email: str) -> None:
         if not customer_id or not name or "@" not in email:
@@ -73,10 +76,6 @@ class ReservationService:
             raise ValueError("Customer not found")
         self.store.save(self.CUSTOMERS, customers)
 
-
-
-
-    # -------- API pública: Reservations --------
     def create_reservation(self, reservation_id: str, hotel_id: str,
                            customer_id: str, room_number: int) -> str:
         hotel = self.get_hotel(hotel_id)
@@ -92,7 +91,6 @@ class ReservationService:
         if any(r["id"] == reservation_id for r in reservations):
             raise ValueError("Reservation id already exists")
 
-        # regla simple: un cuarto por hotel no puede tener 2 reservas simultáneas
         if any(r["hotel_id"] == hotel_id and r["room_number"] == room_number
                for r in reservations):
             raise ValueError("Room already taken")

@@ -71,7 +71,8 @@ class ReservationTest(unittest.TestCase):
             self.svc.cancel_reservation("RX")
 
     def test_corrupted_reservations_file_continue(self):
-        # Archivo corrupto: el sistema debe continuar (se trata como lista vacía)
         base = Path(self.tmp.name)
-        (base / "reservations.json").write_text("{ BAD JSON ]", encoding="utf-8")
-        self.svc.create_reservation("R10", "H1", "C1", 2)  # no debe fallar
+        (base / "reservations.json").write_text(
+            "{ BAD JSON ]", encoding="utf-8"
+        )
+        self.svc.create_reservation("R10", "H1", "C1", 2)

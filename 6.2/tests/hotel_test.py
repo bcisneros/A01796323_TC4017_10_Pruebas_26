@@ -1,11 +1,11 @@
-# tests/test_hotel.py
-import json
+# import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from reservation.service import ReservationService
 from reservation.storage import JsonStore
+
 
 class HotelTest(unittest.TestCase):
     def setUp(self):
