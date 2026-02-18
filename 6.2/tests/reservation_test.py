@@ -4,50 +4,27 @@ Covers happy path, out-of-range room numbers, duplicate ids, room occupancy
 rules, and behavior when the underlying JSON file is malformed.
 """
 
-# Pylint: keep tests lightweight—method names tell the story.
-# We document at module/class level and disable missing function docstrings.
-# This avoids docstring noise while preserving maintainability.
+# Keep tests lightweight—method names tell the story.
 # pylint: disable=missing-function-docstring
 
-import tempfile
-import unittest
-from contextlib import ExitStack
 from pathlib import Path
-
-from reservation.storage import JsonStore
-from reservation.service import ReservationService
+from tests.support import JsonStoreTestCase
 
 
-class ReservationTest(unittest.TestCase):
+class ReservationTest(JsonStoreTestCase):
     """End-to-end reservation scenarios using a temporary JSON store."""
 
     def setUp(self):
-        # Use ExitStack so Pylint sees a context-managed resource allocation.
-        self._stack = ExitStack()
-        self.addCleanup(self._stack.close)
+        super().setUp()
+        # Common baseline data (hotel+customer) for most tests
+        self.seed_baseline(hotel_id="H1", hotel_name="Hotel Azul", rooms=2,
+                           customer_id="C1", customer_name="Benja",
+                           customer_email="b@example.com")
 
-        # Create a per-test temporary directory within the managed stack.
-        self.tmp = self._stack.enter_context(tempfile.TemporaryDirectory())
-
-        base = Path(self.tmp)
-        self.store = JsonStore(base)
-        self.svc = ReservationService(self.store)
-
-        # Per-test data files (isolated)
-        (base / "hotels.json").write_text("[]", encoding="utf-8")
-        (base / "customers.json").write_text("[]", encoding="utf-8")
-        (base / "reservations.json").write_text("[]", encoding="utf-8")
-
-        # Common baseline data
-        self.svc.create_hotel("H1", "Hotel Azul", rooms=2)
-        self.svc.create_customer("C1", "Benja", "b@example.com")
-
-    # Happy path
     def test_create_reservation_ok(self):
         rid = self.svc.create_reservation("R1", "H1", "C1", room_number=1)
         self.assertEqual("R1", rid)
 
-    # Negative cases (≥ 5)
     def test_reservation_hotel_not_found_raises(self):
         with self.assertRaises(ValueError):
             self.svc.create_reservation("R2", "H404", "C1", 1)
@@ -71,14 +48,12 @@ class ReservationTest(unittest.TestCase):
 
     def test_reservation_room_already_taken_raises(self):
         self.svc.create_reservation("R7", "H1", "C1", 1)
-        # Same room, same hotel, different reservation -> must fail
         with self.assertRaises(ValueError):
             self.svc.create_reservation("R8", "H1", "C1", 1)
 
     def test_cancel_reservation_ok(self):
         self.svc.create_reservation("R9", "H1", "C1", 2)
         self.svc.cancel_reservation("R9")
-        # Cancel twice should fail
         with self.assertRaises(ValueError):
             self.svc.cancel_reservation("R9")
 
@@ -87,8 +62,5 @@ class ReservationTest(unittest.TestCase):
             self.svc.cancel_reservation("RX")
 
     def test_corrupted_reservations_file_continue(self):
-        base = Path(self.tmp)
-        (base / "reservations.json").write_text(
-            "{ BAD JSON ]", encoding="utf-8"
-        )
+        (self.base / "reservations.json").write_text("{ BAD JSON ]", encoding="utf-8")
         self.svc.create_reservation("R10", "H1", "C1", 2)
