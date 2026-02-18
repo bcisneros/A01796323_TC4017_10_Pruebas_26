@@ -47,3 +47,6 @@ class HotelTest(JsonStoreTestCase):
     def test_create_hotel_empty_name_raises(self):
         with self.assertRaises(ValueError):
             self.svc.create_hotel("H2", "", 1)
+
+    def test_get_hotel_returns_none_for_unknown_id(self):
+        self.assertIsNone(self.svc.get_hotel("NOPE"))
