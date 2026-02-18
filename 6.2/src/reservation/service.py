@@ -278,3 +278,20 @@ class ReservationService:
         if not found:
             raise ValueError("Hotel not found")
         self.store.save(self.HOTELS, hotels)
+
+    def display_customer_info(self, customer_id: str) -> str:
+        """Return a human-friendly description of the customer.
+
+        Args:
+            customer_id: Unique customer identifier.
+
+        Returns:
+            str: Formatted description (id, name, email).
+
+        Raises:
+            ValueError: If the customer does not exist.
+        """
+        c = self.get_customer(customer_id)
+        if c is None:
+            raise ValueError("Customer not found")
+        return f"Customer {c['id']}: {c['name']} <{c['email']}>"
