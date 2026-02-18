@@ -29,3 +29,35 @@ class ReservationService:
             if h["id"] == hotel_id:
                 return h
         return None
+    
+    # -------- Customers --------
+    def create_customer(self, customer_id: str, name: str, email: str) -> None:
+        if not customer_id or not name or "@" not in email:
+            raise ValueError("Invalid customer data")
+        customers = self.store.load(self.CUSTOMERS)
+        if any(c["id"] == customer_id for c in customers):
+            raise ValueError(f"Customer {customer_id} already exists")
+        customers.append({"id": customer_id, "name": name, "email": email})
+        self.store.save(self.CUSTOMERS, customers)
+
+    def get_customer(self, customer_id: str) -> Optional[Dict]:
+        customers = self.store.load(self.CUSTOMERS)
+        return next((c for c in customers if c["id"] == customer_id), None)
+
+    def delete_customer(self, customer_id: str) -> None:
+        customers = self.store.load(self.CUSTOMERS)
+        new_customers = [c for c in customers if c["id"] != customer_id]
+        if len(new_customers) == len(customers):
+            raise ValueError("Customer not found")
+        self.store.save(self.CUSTOMERS, new_customers)
+
+    def update_customer(self, customer_id: str, **fields) -> None:
+        customers = self.store.load(self.CUSTOMERS)
+        found = False
+        for c in customers:
+            if c["id"] == customer_id:
+                c.update(fields)
+                found = True
+        if not found:
+            raise ValueError("Customer not found")
+        self.store.save(self.CUSTOMERS, customers)

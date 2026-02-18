@@ -7,7 +7,7 @@ from pathlib import Path
 from reservation.service import ReservationService
 from reservation.storage import JsonStore
 
-class TestHotel(unittest.TestCase):
+class HotelTest(unittest.TestCase):
     def setUp(self):
         # Carpeta temporal por test (cada test genera sus propios datos)
         self.tmp = tempfile.TemporaryDirectory()
