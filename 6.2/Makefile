@@ -24,3 +24,7 @@ html: test
 clean:
 	@echo "🧹 Cleaning coverage artifacts..."
 	rm -rf .coverage htmlcov
+
+demo:
+	@echo "Running Demo"
+	python scripts/cli.py
