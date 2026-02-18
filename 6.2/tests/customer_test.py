@@ -58,3 +58,11 @@ class CustomerTest(JsonStoreTestCase):
     def test_create_customer_empty_name_raises(self):
         with self.assertRaises(ValueError):
             self.svc.create_customer("C2", "", "a@example.com")
+
+    def test_get_customer_returns_none_for_unknown_id(self):
+        self.assertIsNone(self.svc.get_customer("NOPE"))
+
+    def test_delete_customer_ok(self):
+        self.svc.create_customer("C10", "X", "x@x.com")
+        self.svc.delete_customer("C10")
+        self.assertIsNone(self.svc.get_customer("C10"))
