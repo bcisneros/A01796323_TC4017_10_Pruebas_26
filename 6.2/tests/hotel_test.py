@@ -8,13 +8,13 @@ and robustness when the underlying hotels JSON file is malformed.
 # Document at module/class level; avoid noisy method docstrings.
 # pylint: disable=missing-function-docstring
 import copy
+import unittest
 from unittest.mock import MagicMock
-from tests.support import JsonStoreTestCase
 
 from reservation.service import ReservationService
 
 
-class HotelTest(JsonStoreTestCase):
+class HotelTest(unittest.TestCase):
     """Hotel scenarios using a per-test temporary JSON store."""
 
     def setUp(self):
