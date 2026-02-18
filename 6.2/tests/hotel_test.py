@@ -67,3 +67,33 @@ class HotelTest(JsonStoreTestCase):
     def test_display_hotel_info_unknown_hotel_raises(self):
         with self.assertRaises(ValueError):
             self.svc.display_hotel_info("NOPE")
+
+    def test_update_hotel_name(self):
+        # Arrange
+        self.svc.create_hotel("HU1", "Old Name", 5)
+        # Act
+        self.svc.update_hotel("HU1", name="New Name")
+        # Assert
+        h = self.svc.get_hotel("HU1")
+        self.assertEqual("New Name", h["name"])
+        self.assertEqual(5, h["rooms"])  # unchanged
+
+    def test_update_hotel_rooms(self):
+        self.svc.create_hotel("HU2", "Hotel Rooms", 5)
+        self.svc.update_hotel("HU2", rooms=8)
+        h = self.svc.get_hotel("HU2")
+        self.assertEqual(8, h["rooms"])
+
+    def test_update_hotel_not_found_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.update_hotel("NOPE", name="X")
+
+    def test_update_hotel_invalid_rooms_raises(self):
+        self.svc.create_hotel("HU3", "Hotel Invalid", 3)
+        with self.assertRaises(ValueError):
+            self.svc.update_hotel("HU3", rooms=0)
+
+    def test_update_hotel_empty_name_raises(self):
+        self.svc.create_hotel("HU4", "Will Rename", 3)
+        with self.assertRaises(ValueError):
+            self.svc.update_hotel("HU4", name="")
