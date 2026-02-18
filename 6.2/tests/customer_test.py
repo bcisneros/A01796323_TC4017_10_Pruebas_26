@@ -13,9 +13,7 @@ from tests.support import JsonStoreTestCase
 class CustomerTest(JsonStoreTestCase):
     """Customer CRUD scenarios using a per-test temporary JSON store."""
 
-    def setUp(self):
-        super().setUp()
-        # No baseline needed for the first test; others create explicitly.
+    # (No local setUp override needed; we directly inherit the base setUp())
 
     # Happy path: create and read back
     def test_create_and_get_customer(self):
