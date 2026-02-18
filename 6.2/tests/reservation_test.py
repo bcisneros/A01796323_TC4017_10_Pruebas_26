@@ -11,6 +11,7 @@ rules, and behavior when the underlying JSON file is malformed.
 
 import tempfile
 import unittest
+from contextlib import ExitStack
 from pathlib import Path
 
 from reservation.storage import JsonStore
@@ -21,12 +22,14 @@ class ReservationTest(unittest.TestCase):
     """End-to-end reservation scenarios using a temporary JSON store."""
 
     def setUp(self):
-        # Create a per-test temporary directory
-        # and ensure cleanup is registered.
-        self.tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
+        # Use ExitStack so Pylint sees a context-managed resource allocation.
+        self._stack = ExitStack()
+        self.addCleanup(self._stack.close)
 
-        base = Path(self.tmp.name)
+        # Create a per-test temporary directory within the managed stack.
+        self.tmp = self._stack.enter_context(tempfile.TemporaryDirectory())
+
+        base = Path(self.tmp)
         self.store = JsonStore(base)
         self.svc = ReservationService(self.store)
 
@@ -84,7 +87,7 @@ class ReservationTest(unittest.TestCase):
             self.svc.cancel_reservation("RX")
 
     def test_corrupted_reservations_file_continue(self):
-        base = Path(self.tmp.name)
+        base = Path(self.tmp)
         (base / "reservations.json").write_text(
             "{ BAD JSON ]", encoding="utf-8"
         )
