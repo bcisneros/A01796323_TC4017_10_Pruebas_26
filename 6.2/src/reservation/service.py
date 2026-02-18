@@ -258,7 +258,7 @@ class ReservationService:
         Raises:
             ValueError: If the hotel does not exist or fields are invalid.
         """
-        hotels = self.store.load(self.HOTELS)
+        hotels = self._load_hotels()
         found = False
         for h in hotels:
             if h["id"] == hotel_id:
