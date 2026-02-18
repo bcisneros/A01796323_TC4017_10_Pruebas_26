@@ -230,3 +230,20 @@ class ReservationService:
         if len(new_rows) == len(reservations):
             raise ValueError("Reservation not found")
         self._save_reservations(new_rows)
+
+    def display_hotel_info(self, hotel_id: str) -> str:
+        """Return a human-friendly description of the hotel.
+
+        Args:
+            hotel_id: Unique hotel identifier.
+
+        Returns:
+            str: Formatted description (id, name, rooms).
+
+        Raises:
+            ValueError: If the hotel does not exist.
+        """
+        hotel = self.get_hotel(hotel_id)
+        if hotel is None:
+            raise ValueError("Hotel not found")
+        return f"Hotel {hotel['id']}: {hotel['name']} (rooms={hotel['rooms']})"
