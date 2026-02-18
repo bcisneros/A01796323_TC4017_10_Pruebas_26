@@ -70,7 +70,7 @@ class ReservationService:
         """
         if not hotel_id or not name or rooms <= 0:
             raise ValueError("Invalid hotel data")
-        hotels = self.store.load(self.HOTELS)
+        hotels = self._load_hotels()
         if any(h["id"] == hotel_id for h in hotels):
             raise ValueError(f"Hotel {hotel_id} already exists")
         hotels.append({"id": hotel_id, "name": name, "rooms": rooms})
@@ -85,7 +85,7 @@ class ReservationService:
         Returns:
             dict | None: The hotel record if found, else None.
         """
-        hotels = self.store.load(self.HOTELS)
+        hotels = self._load_hotels()
         for h in hotels:
             if h["id"] == hotel_id:
                 return h
@@ -105,7 +105,7 @@ class ReservationService:
         """
         if not customer_id or not name or "@" not in email:
             raise ValueError("Invalid customer data")
-        customers = self.store.load(self.CUSTOMERS)
+        customers = self._load_customers()
         if any(c["id"] == customer_id for c in customers):
             raise ValueError(f"Customer {customer_id} already exists")
         customers.append({"id": customer_id, "name": name, "email": email})
@@ -120,7 +120,7 @@ class ReservationService:
         Returns:
             dict | None: The customer record if found, else None.
         """
-        customers = self.store.load(self.CUSTOMERS)
+        customers = self._load_customers()
         return next((c for c in customers if c["id"] == customer_id), None)
 
     def delete_customer(self, customer_id: str) -> None:
@@ -132,7 +132,7 @@ class ReservationService:
         Raises:
             ValueError: If the customer does not exist.
         """
-        customers = self.store.load(self.CUSTOMERS)
+        customers = self._load_customers()
         new_customers = [c for c in customers if c["id"] != customer_id]
         if len(new_customers) == len(customers):
             raise ValueError("Customer not found")
@@ -148,7 +148,7 @@ class ReservationService:
         Raises:
             ValueError: If the customer does not exist.
         """
-        customers = self.store.load(self.CUSTOMERS)
+        customers = self._load_customers()
         found = False
         for c in customers:
             if c["id"] == customer_id:
