@@ -12,7 +12,18 @@ class ReservationService:
 
     def __init__(self, store: JsonStore) -> None:
         self.store = store
+    # -------- Helpers internos --------
+    def _load_hotels(self) -> List[Dict]:
+        return self.store.load(self.HOTELS)
 
+    def _load_customers(self) -> List[Dict]:
+        return self.store.load(self.CUSTOMERS)
+
+    def _load_reservations(self) -> List[Dict]:
+        return self.store.load(self.RESERVATIONS)
+
+    def _save_reservations(self, rows: List[Dict]) -> None:
+        self.store.save(self.RESERVATIONS, rows)
     # ------- Hotels -------
     def create_hotel(self, hotel_id: str, name: str, rooms: int) -> None:
         if not hotel_id or not name or rooms <= 0:
@@ -61,3 +72,43 @@ class ReservationService:
         if not found:
             raise ValueError("Customer not found")
         self.store.save(self.CUSTOMERS, customers)
+
+
+
+
+    # -------- API pública: Reservations --------
+    def create_reservation(self, reservation_id: str, hotel_id: str,
+                           customer_id: str, room_number: int) -> str:
+        hotel = self.get_hotel(hotel_id)
+        if hotel is None:
+            raise ValueError("Hotel not found")
+        customer = self.get_customer(customer_id)
+        if customer is None:
+            raise ValueError("Customer not found")
+        if room_number <= 0 or room_number > hotel["rooms"]:
+            raise ValueError("Invalid room number")
+
+        reservations = self._load_reservations()
+        if any(r["id"] == reservation_id for r in reservations):
+            raise ValueError("Reservation id already exists")
+
+        # regla simple: un cuarto por hotel no puede tener 2 reservas simultáneas
+        if any(r["hotel_id"] == hotel_id and r["room_number"] == room_number
+               for r in reservations):
+            raise ValueError("Room already taken")
+
+        reservations.append({
+            "id": reservation_id,
+            "hotel_id": hotel_id,
+            "customer_id": customer_id,
+            "room_number": room_number
+        })
+        self._save_reservations(reservations)
+        return reservation_id
+
+    def cancel_reservation(self, reservation_id: str) -> None:
+        reservations = self._load_reservations()
+        new_rows = [r for r in reservations if r["id"] != reservation_id]
+        if len(new_rows) == len(reservations):
+            raise ValueError("Reservation not found")
+        self._save_reservations(new_rows)
