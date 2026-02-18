@@ -65,3 +65,9 @@ class ReservationTest(JsonStoreTestCase):
             "{ BAD JSON ]", encoding="utf-8"
         )
         self.svc.create_reservation("R10", "H1", "C1", 2)
+
+    def test_reuse_room_after_cancel_ok(self):
+        self.svc.create_reservation("R11", "H1", "C1", 1)
+        self.svc.cancel_reservation("R11")
+        rid = self.svc.create_reservation("R12", "H1", "C1", 1)
+        self.assertEqual("R12", rid)
