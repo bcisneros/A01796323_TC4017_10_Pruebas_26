@@ -39,3 +39,11 @@ class HotelTest(JsonStoreTestCase):
         # Must continue and treat as empty list; create should work
         self.svc.create_hotel("H3", "Nuevo", 1)
         self.assertIsNotNone(self.svc.get_hotel("H3"))
+
+    def test_create_hotel_empty_id_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.create_hotel("", "X", 1)
+
+    def test_create_hotel_empty_name_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.create_hotel("H2", "", 1)
