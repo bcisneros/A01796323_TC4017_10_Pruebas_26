@@ -66,3 +66,15 @@ class CustomerTest(JsonStoreTestCase):
         self.svc.create_customer("C10", "X", "x@x.com")
         self.svc.delete_customer("C10")
         self.assertIsNone(self.svc.get_customer("C10"))
+
+    def test_display_customer_info_returns_formatted_string(self):
+        # Arrange
+        self.svc.create_customer("CX", "Alice Doe", "alice@example.com")
+        # Act
+        summary = self.svc.display_customer_info("CX")
+        # Assert
+        self.assertEqual("Customer CX: Alice Doe <alice@example.com>", summary)
+
+    def test_display_customer_info_unknown_customer_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.display_customer_info("NOPE")
