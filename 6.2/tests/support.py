@@ -42,7 +42,8 @@ class JsonStoreTestCase(unittest.TestCase):
         customer_name: str = "Benja",
         customer_email: str = "b@example.com",
     ) -> None:
-        """Seed a default hotel and customer commonly used by reservation tests.
+        """
+        Seed a default hotel and customer commonly used by reservation tests.
 
         Args:
             hotel_id: Hotel identifier (default: 'H1').
