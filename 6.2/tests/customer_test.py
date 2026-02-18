@@ -50,3 +50,11 @@ class CustomerTest(JsonStoreTestCase):
     def test_update_customer_not_found_raises(self):
         with self.assertRaises(ValueError):
             self.svc.update_customer("C404", name="X")
+
+    def test_create_customer_empty_id_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.create_customer("", "A", "a@example.com")
+
+    def test_create_customer_empty_name_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.create_customer("C2", "", "a@example.com")
