@@ -50,3 +50,10 @@ class HotelTest(JsonStoreTestCase):
 
     def test_get_hotel_returns_none_for_unknown_id(self):
         self.assertIsNone(self.svc.get_hotel("NOPE"))
+
+    def test_load_returns_empty_when_hotels_file_absent(self):
+        # Remove the file created by the base fixture to simulate "missing file"
+        (self.base / "hotels.json").unlink(missing_ok=True)
+
+        rows = self.store.load("hotels.json")
+        self.assertEqual([], rows)
