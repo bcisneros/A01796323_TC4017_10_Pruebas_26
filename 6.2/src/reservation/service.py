@@ -247,3 +247,34 @@ class ReservationService:
         if hotel is None:
             raise ValueError("Hotel not found")
         return f"Hotel {hotel['id']}: {hotel['name']} (rooms={hotel['rooms']})"
+
+    def update_hotel(self, hotel_id: str, **fields) -> None:
+        """Update hotel attributes (e.g., name, rooms).
+
+        Args:
+            hotel_id: Unique hotel identifier.
+            **fields: Fields to update (supported: name, rooms).
+
+        Raises:
+            ValueError: If the hotel does not exist or fields are invalid.
+        """
+        hotels = self.store.load(self.HOTELS)
+        found = False
+        for h in hotels:
+            if h["id"] == hotel_id:
+                # Validate inputs if present
+                if "name" in fields:
+                    new_name = fields["name"]
+                    if not isinstance(new_name, str) or not new_name:
+                        raise ValueError("Invalid hotel name")
+                if "rooms" in fields:
+                    new_rooms = fields["rooms"]
+                    if not isinstance(new_rooms, int) or new_rooms <= 0:
+                        raise ValueError("Invalid rooms value")
+                # Apply updates
+                h.update(fields)
+                found = True
+                break
+        if not found:
+            raise ValueError("Hotel not found")
+        self.store.save(self.HOTELS, hotels)
