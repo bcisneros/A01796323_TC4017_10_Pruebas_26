@@ -58,3 +58,12 @@ class HotelTest(JsonStoreTestCase):
 
         rows = self.store.load("hotels.json")
         self.assertEqual([], rows)
+
+    def test_display_hotel_info_returns_formatted_string(self):
+        self.svc.create_hotel("HX", "Hotel X", 10)
+        summary = self.svc.display_hotel_info("HX")
+        self.assertEqual("Hotel HX: Hotel X (rooms=10)", summary)
+
+    def test_display_hotel_info_unknown_hotel_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.display_hotel_info("NOPE")
