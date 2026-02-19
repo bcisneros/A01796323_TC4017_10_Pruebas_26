@@ -3,6 +3,14 @@
     "id": "R100",
     "hotel_id": "H100",
     "customer_id": "C100",
-    "room_number": 1
+    "room_number": 1,
+    "status": "active"
+  },
+  {
+    "id": "R200",
+    "hotel_id": "H100",
+    "customer_id": "C200",
+    "room_number": 2,
+    "status": "cancelled"
   }
 ]

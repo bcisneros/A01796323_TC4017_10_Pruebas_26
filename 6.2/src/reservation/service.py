@@ -243,7 +243,8 @@ class ReservationService:
         new_reservation = Reservation(id=reservation_id,
                                       hotel_id=hotel_id,
                                       customer_id=customer_id,
-                                      room_number=room_number)
+                                      room_number=room_number,
+                                      status="active")
         reservations.append(new_reservation)
         self._save_reservations(reservations)
         return reservation_id
@@ -258,10 +259,17 @@ class ReservationService:
             ValueError: If the reservation does not exist.
         """
         reservations = self._load_reservations()
-        new_rows = [r for r in reservations if r.id != reservation_id]
-        if len(new_rows) == len(reservations):
+        idx = next(
+            (i for i, c in enumerate(reservations) if c.id == reservation_id),
+            -1
+        )
+        if idx < 0:
             raise ValueError("Reservation not found")
-        self._save_reservations(new_rows)
+
+        current = reservations[idx]
+
+        reservations[idx] = current.cancel()
+        self._save_reservations(reservations)
 
     def display_hotel_info(self, hotel_id: str) -> str:
         """Return a human-friendly description of the hotel.

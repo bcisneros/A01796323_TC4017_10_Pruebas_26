@@ -36,7 +36,8 @@ class ReservationTest(unittest.TestCase):
                 "id": "R1",
                 "hotel_id": "H1",
                 "customer_id": "C1",
-                "room_number": 1
+                "room_number": 1,
+                "status": "active"
             }
         ]
         self.assertEqual(res, args[1])
@@ -118,7 +119,15 @@ class ReservationTest(unittest.TestCase):
         args, _ = self.store.save.call_args
         self.assertEqual(ReservationService.RESERVATIONS, args[0])
         self.assertEqual(
-            [],
+            [
+                {
+                    "id": "R9",
+                    "hotel_id": "H1",
+                    "customer_id": "C1",
+                    "room_number": 2,
+                    "status": "cancelled"
+                }
+            ],
             args[1]
         )
 

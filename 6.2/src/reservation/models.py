@@ -10,7 +10,7 @@ predictability in unit tests and to encourage explicit updates through the
 service layer rather than in-place mutations.
 """
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, replace
 
 
 @dataclass(frozen=True)
@@ -89,6 +89,7 @@ class Reservation:
     hotel_id: str
     customer_id: str
     room_number: int
+    status: str
 
     @staticmethod
     def from_dict(data: dict) -> "Reservation":
@@ -97,9 +98,14 @@ class Reservation:
             id=data["id"],
             hotel_id=data["hotel_id"],
             customer_id=data["customer_id"],
-            room_number=data["room_number"]
+            room_number=data["room_number"],
+            status=data.get("status")
         )
 
     def to_dict(self) -> dict:
         """Return the dictionary representation (for JSON persistence)."""
         return asdict(self)
+
+    def cancel(self) -> "Reservation":
+        """Returns a new Reservation instance with status='cancelled'"""
+        return replace(self, status="cancelled")

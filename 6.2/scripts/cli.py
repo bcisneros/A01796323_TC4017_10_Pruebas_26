@@ -121,14 +121,16 @@ def list_reservations(svc: ReservationService) -> None:
     if not rows:
         print("(No hay reservaciones)")
         return
-    print("\nID     | Hotel  | Cliente | Habitación")
-    print("-" * 42)
+    
+    print("\nID     | Hotel  | Cliente | Habitación | Status")
+    print("-" * 47)
     for r in rows:
         id = f"{r.id:<6}"
         hotel_id = f"{r.hotel_id:<6}"
         customer_id = f"{r.customer_id:<7}"
-        room_number = f"{r.room_number}"
-        print(f"{id} | {hotel_id} | {customer_id} | {room_number}")
+        room_number = f"{r.room_number:<10}"
+        status = f"{r.status}"
+        print(f"{id} | {hotel_id} | {customer_id} | {room_number} | {status}")
 
 
 def menu_loop() -> None:
