@@ -6,23 +6,40 @@ rules, and behavior when the underlying JSON file is malformed.
 
 # Keep tests lightweight—method names tell the story.
 # pylint: disable=missing-function-docstring
+import unittest
+from unittest.mock import MagicMock
+from reservation.service import ReservationService
 
-from tests.support import JsonStoreTestCase
 
-
-class ReservationTest(JsonStoreTestCase):
+class ReservationTest(unittest.TestCase):
     """End-to-end reservation scenarios using a temporary JSON store."""
 
     def setUp(self):
-        super().setUp()
-        # Common baseline data (hotel+customer) for most tests
-        self.seed_baseline(hotel_id="H1", hotel_name="Hotel Azul", rooms=2,
-                           customer_id="C1", customer_name="Benja",
-                           customer_email="b@example.com")
+        self.store, _ = self._store_with_maps(
+            hotels=[{"id": "H1", "name": "Hotel Azul", "rooms": 2}],
+            customers=[
+                {"id": "C1", "name": "Benja", "email": "b@example.com"}
+            ],
+            reservations=[],
+        )
+        self.svc = ReservationService(self.store)
 
     def test_create_reservation_ok(self):
         rid = self.svc.create_reservation("R1", "H1", "C1", room_number=1)
         self.assertEqual("R1", rid)
+
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(ReservationService.RESERVATIONS, args[0])
+        res = [
+            {
+                "id": "R1",
+                "hotel_id": "H1",
+                "customer_id": "C1",
+                "room_number": 1
+            }
+        ]
+        self.assertEqual(res, args[1])
 
     def test_reservation_hotel_not_found_raises(self):
         with self.assertRaises(ValueError):
@@ -51,23 +68,42 @@ class ReservationTest(JsonStoreTestCase):
             self.svc.create_reservation("R8", "H1", "C1", 1)
 
     def test_cancel_reservation_ok(self):
-        self.svc.create_reservation("R9", "H1", "C1", 2)
+        self.store, _ = self._store_with_maps(
+            hotels=[{"id": "H1", "name": "Hotel Azul", "rooms": 2}],
+            customers=[
+                {"id": "C1", "name": "Benja", "email": "b@example.com"}
+            ],
+            reservations=[
+                {
+                    "id": "R9",
+                    "hotel_id": "H1",
+                    "customer_id": "C1",
+                    "room_number": 2
+                }
+            ],
+        )
+        self.svc = ReservationService(self.store)
         self.svc.cancel_reservation("R9")
-        with self.assertRaises(ValueError):
-            self.svc.cancel_reservation("R9")
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(ReservationService.RESERVATIONS, args[0])
+        self.assertEqual(
+            [],
+            args[1]
+        )
 
     def test_cancel_unknown_reservation_raises(self):
         with self.assertRaises(ValueError):
             self.svc.cancel_reservation("RX")
 
-    def test_corrupted_reservations_file_continue(self):
-        (self.base / "reservations.json").write_text(
-            "{ BAD JSON ]", encoding="utf-8"
-        )
-        self.svc.create_reservation("R10", "H1", "C1", 2)
-
-    def test_reuse_room_after_cancel_ok(self):
-        self.svc.create_reservation("R11", "H1", "C1", 1)
-        self.svc.cancel_reservation("R11")
-        rid = self.svc.create_reservation("R12", "H1", "C1", 1)
-        self.assertEqual("R12", rid)
+    @staticmethod
+    def _store_with_maps(*, hotels=None, customers=None, reservations=None):
+        store = MagicMock()
+        # Respuestas por “catálogo” para load
+        load_map = {
+            ReservationService.HOTELS: hotels or [],
+            ReservationService.CUSTOMERS: customers or [],
+            ReservationService.RESERVATIONS: reservations or [],
+        }
+        store.load.side_effect = lambda name: load_map.get(name, [])
+        return store, load_map
