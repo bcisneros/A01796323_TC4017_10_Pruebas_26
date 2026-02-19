@@ -29,11 +29,8 @@ class HotelTest(unittest.TestCase):
         self.svc.create_hotel("H1", "Hotel Azul", 3)
         # Assert
         self.store.load.assert_called_once_with(self.svc.HOTELS)
-        self.store.save.assert_called_once()
-        args, _ = self.store.save.call_args
-        self.assertEqual(self.svc.HOTELS, args[0])
         data = [{"id": "H1", "name": "Hotel Azul", "rooms": 3}]
-        self.assertEqual(data, args[1])
+        self._assert_save(data)
 
     def test_create_hotel_with_valid_rooms(self):
         self.store.load.return_value = []
@@ -109,16 +106,12 @@ class HotelTest(unittest.TestCase):
 
         self.svc.update_hotel("H1", name="New")
         self.store.load.assert_called_once_with(self.svc.HOTELS)
-        self.store.save.assert_called_once()
-        args, _ = self.store.save.call_args
-        self.assertEqual(self.svc.HOTELS, args[0])
-        self.assertEqual([{"id": "H1", "name": "New", "rooms": 3}], args[1])
+        self._assert_save([{"id": "H1", "name": "New", "rooms": 3}])
 
     def test_update_hotel_rooms(self):
         self.store.load.return_value = [{"id": "H1", "name": "X", "rooms": 3}]
         self.svc.update_hotel("H1", rooms=8)
-        args, _ = self.store.save.call_args
-        self.assertEqual([{"id": "H1", "name": "X", "rooms": 8}], args[1])
+        self._assert_save([{"id": "H1", "name": "X", "rooms": 8}])
 
     def test_update_hotel_not_found_raises(self):
         self.store.load.return_value = [{"id": "HX", "name": "X", "rooms": 1}]
@@ -137,3 +130,24 @@ class HotelTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.svc.update_hotel("H1", name="")
         self.store.save.assert_not_called()
+
+    # --- Delete Hotels ---
+    def test_delete_hotel_ok(self):
+        # Arrange
+        data = [{"id": "H1", "name": "Hotel to Delete", "rooms": 1}]
+        self.store.load.return_value = data
+        # Act
+        self.svc.delete_hotel("H1")
+        # Assert
+        self._assert_save([])
+
+    # Negative 3: delete unknown
+    def test_delete_hotel_not_found_raises(self):
+        with self.assertRaises(ValueError):
+            self.svc.delete_hotel("UNKNOWN_HOTEL_ID")
+
+    def _assert_save(self, data):
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(self.svc.HOTELS, args[0])
+        self.assertEqual(data, args[1])

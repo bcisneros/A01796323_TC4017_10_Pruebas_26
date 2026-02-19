@@ -153,6 +153,21 @@ class ReservationService:
             raise ValueError("Customer not found")
         self._save_customers(new_customers)
 
+    def delete_hotel(self, hotel_id: str) -> None:
+        """Delete an hotel by id.
+
+        Args:
+            hotel_id: Unique hotel identifier.
+
+        Raises:
+            ValueError: If the hotel does not exist.
+        """
+        hotels = self._load_hotels()
+        new_hotels = [h for h in hotels if h.id != hotel_id]
+        if len(new_hotels) == len(hotels):
+            raise ValueError("Hotel not found")
+        self._save_hotels(new_hotels)
+
     def update_customer(self, customer_id: str, **fields) -> None:
         """Update fields on a customer record (e.g., `name`, `email`).
 

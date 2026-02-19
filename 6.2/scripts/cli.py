@@ -102,7 +102,7 @@ def list_hotels(svc: ReservationService) -> None:
     print("\nID     | Nombre         | Cuartos")
     print("-" * 38)
     for h in hotels:
-        print(f"{h['id']:<6} | {h['name']:<14} | {h['rooms']}")
+        print(f"{h.id:<6} | {h.name:<14} | {h.rooms}")
 
 
 def list_customers(svc: ReservationService) -> None:
@@ -113,7 +113,7 @@ def list_customers(svc: ReservationService) -> None:
     print("\nID     | Nombre         | Email")
     print("-" * 60)
     for c in customers:
-        print(f"{c['id']:<6} | {c['name']:<14} | {c['email']}")
+        print(f"{c.id:<6} | {c.name:<14} | {c.email}")
 
 
 def list_reservations(svc: ReservationService) -> None:
@@ -124,10 +124,10 @@ def list_reservations(svc: ReservationService) -> None:
     print("\nID     | Hotel  | Cliente | Habitación")
     print("-" * 42)
     for r in rows:
-        id = f"{r['id']:<6}"
-        hotel_id = f"{r['hotel_id']:<6}"
-        customer_id = f"{r['customer_id']:<7}"
-        room_number = f"{r['room_number']}"
+        id = f"{r.id:<6}"
+        hotel_id = f"{r.hotel_id:<6}"
+        customer_id = f"{r.customer_id:<7}"
+        room_number = f"{r.room_number}"
         print(f"{id} | {hotel_id} | {customer_id} | {room_number}")
 
 
@@ -204,7 +204,7 @@ def action_display_hotel(svc: ReservationService) -> None:
         h = svc.get_hotel(hotel_id)
         if h is None:
             raise ValueError("Hotel not found")
-        summary = f"Hotel {h['id']}: {h['name']} (rooms={h['rooms']})"
+        summary = str(h)
     print(summary)
 
 
@@ -231,11 +231,7 @@ def action_update_hotel(svc: ReservationService) -> None:
 
 def action_delete_hotel(svc: ReservationService) -> None:
     hotel_id = _input_nonempty("Id del hotel a eliminar: ")
-    hotels = svc._load_hotels()  # pylint: disable=protected-access
-    new_rows = [h for h in hotels if h['id'] != hotel_id]
-    if len(new_rows) == len(hotels):
-        raise ValueError("Hotel not found")
-    svc.store.save(svc.HOTELS, new_rows)
+    svc.delete_hotel(hotel_id)
     print("✅ Hotel eliminado.")
 
 
@@ -259,7 +255,7 @@ def action_display_customer(svc: ReservationService) -> None:
         c = svc.get_customer(customer_id)
         if c is None:
             raise ValueError("Customer not found")
-        summary = f"Customer {c['id']}: {c['name']} <{c['email']}>"
+        summary = str(c)
     print(summary)
 
 
