@@ -10,7 +10,7 @@ predictability in unit tests and to encourage explicit updates through the
 service layer rather than in-place mutations.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 
 
 @dataclass(frozen=True)
@@ -25,6 +25,23 @@ class Hotel:
     id: str
     name: str
     rooms: int
+
+    @staticmethod
+    def from_dict(data: dict) -> "Hotel":
+        """Create a Hotel instance from a dictionary (store payload)."""
+        return Hotel(
+            id=data["id"],
+            name=data["name"],
+            rooms=data["rooms"],
+        )
+
+    def to_dict(self) -> dict:
+        """Return the dictionary representation (for JSON persistence)."""
+        return asdict(self)
+
+    def __str__(self) -> str:
+        """Human-friendly one-liner used to display hotel information."""
+        return f"Hotel {self.id}: {self.name} (rooms={self.rooms})"
 
 
 @dataclass(frozen=True)

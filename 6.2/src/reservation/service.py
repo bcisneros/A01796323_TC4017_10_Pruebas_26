@@ -14,6 +14,7 @@ It covers:
 from __future__ import annotations
 from typing import Dict, List, Optional
 
+from .models import Hotel
 from .storage import JsonStore
 
 
@@ -40,9 +41,14 @@ class ReservationService:
         self.store = store
 
     # -------- Internal helpers --------
-    def _load_hotels(self) -> List[Dict]:
+    def _load_hotels(self) -> List[Hotel]:
         """Return the list of hotels from the store."""
-        return self.store.load(self.HOTELS)
+        rows: List[Dict] = self.store.load(self.HOTELS)
+        return [Hotel.from_dict(r) for r in rows]
+
+    def _save_hotels(self, hotels: List[Hotel]) -> None:
+        rows = [h.to_dict() for h in hotels]
+        self.store.save(self.HOTELS, rows)
 
     def _load_customers(self) -> List[Dict]:
         """Return the list of customers from the store."""
@@ -71,12 +77,13 @@ class ReservationService:
         if not hotel_id or not name or rooms <= 0:
             raise ValueError("Invalid hotel data")
         hotels = self._load_hotels()
-        if any(h["id"] == hotel_id for h in hotels):
+        if any(h.id == hotel_id for h in hotels):
             raise ValueError(f"Hotel {hotel_id} already exists")
-        hotels.append({"id": hotel_id, "name": name, "rooms": rooms})
-        self.store.save(self.HOTELS, hotels)
+        hotel = Hotel(id=hotel_id, name=name, rooms=rooms)
+        hotels.append(hotel)
+        self._save_hotels(hotels)
 
-    def get_hotel(self, hotel_id: str) -> Optional[Dict]:
+    def get_hotel(self, hotel_id: str) -> Optional[Hotel]:
         """Return the hotel by id, or `None` if it does not exist.
 
         Args:
@@ -87,7 +94,7 @@ class ReservationService:
         """
         hotels = self._load_hotels()
         for h in hotels:
-            if h["id"] == hotel_id:
+            if h.id == hotel_id:
                 return h
         return None
 
@@ -192,7 +199,7 @@ class ReservationService:
         customer = self.get_customer(customer_id)
         if customer is None:
             raise ValueError("Customer not found")
-        if room_number <= 0 or room_number > hotel["rooms"]:
+        if room_number <= 0 or room_number > hotel.rooms:
             raise ValueError("Invalid room number")
 
         reservations = self._load_reservations()
@@ -246,7 +253,7 @@ class ReservationService:
         hotel = self.get_hotel(hotel_id)
         if hotel is None:
             raise ValueError("Hotel not found")
-        return f"Hotel {hotel['id']}: {hotel['name']} (rooms={hotel['rooms']})"
+        return str(hotel)
 
     def update_hotel(self, hotel_id: str, **fields) -> None:
         """Update hotel attributes (e.g., name, rooms).
@@ -259,25 +266,21 @@ class ReservationService:
             ValueError: If the hotel does not exist or fields are invalid.
         """
         hotels = self._load_hotels()
-        found = False
-        for h in hotels:
-            if h["id"] == hotel_id:
-                # Validate inputs if present
-                if "name" in fields:
-                    new_name = fields["name"]
-                    if not isinstance(new_name, str) or not new_name:
-                        raise ValueError("Invalid hotel name")
-                if "rooms" in fields:
-                    new_rooms = fields["rooms"]
-                    if not isinstance(new_rooms, int) or new_rooms <= 0:
-                        raise ValueError("Invalid rooms value")
-                # Apply updates
-                h.update(fields)
-                found = True
-                break
-        if not found:
+        idx = next((i for i, h in enumerate(hotels) if h.id == hotel_id), -1)
+        if idx < 0:
             raise ValueError("Hotel not found")
-        self.store.save(self.HOTELS, hotels)
+
+        current = hotels[idx]
+        new_name = fields.get("name", current.name)
+        new_rooms = fields.get("rooms", current.rooms)
+
+        if not isinstance(new_name, str) or not new_name:
+            raise ValueError("Invalid hotel name")
+        if not isinstance(new_rooms, int) or new_rooms <= 0:
+            raise ValueError("Invalid rooms value")
+
+        hotels[idx] = Hotel(id=current.id, name=new_name, rooms=new_rooms)
+        self._save_hotels(hotels)
 
     def display_customer_info(self, customer_id: str) -> str:
         """Return a human-friendly description of the customer.

@@ -83,7 +83,7 @@ class HotelTest(unittest.TestCase):
 
         self.assertEqual(
             {"id": "H2", "name": "Second Hotel", "rooms": 3},
-            hotel
+            hotel.to_dict()
         )
 
     def test_get_hotel_returns_none_for_unknown_id(self):
