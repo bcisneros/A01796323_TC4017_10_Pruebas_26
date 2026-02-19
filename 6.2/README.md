@@ -94,7 +94,7 @@ Your code has been rated at 10.00/10 (previous run: 10.00/10, +0.00)
 
 **Run Tests + Coverage**
 
-```bash
+```
 make cov
 🧪 Running unit tests with coverage...
 coverage erase
@@ -125,6 +125,9 @@ TOTAL                           131      0   100%
 **Generate HTML Coverage Report**
 
 ```
+make html
+...
+
 ----------------------------------------------------------------------
 Ran 40 tests in 0.024s
 
