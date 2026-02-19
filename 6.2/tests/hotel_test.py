@@ -35,6 +35,16 @@ class HotelTest(unittest.TestCase):
         data = [{"id": "H1", "name": "Hotel Azul", "rooms": 3}]
         self.assertEqual(data, args[1])
 
+    def test_create_hotel_with_valid_rooms(self):
+        self.store.load.return_value = []
+
+        self.svc.create_hotel("H1", "Hotel Azul", 1)
+
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(self.svc.HOTELS, args[0])
+        self.assertEqual(1, args[1][0]["rooms"])
+
     # 1) Negative: duplicated id
     def test_create_hotel_duplicated_id_raises(self):
         self.store.load.return_value = [{"id": "H1", "name": "A", "rooms": 1}]
