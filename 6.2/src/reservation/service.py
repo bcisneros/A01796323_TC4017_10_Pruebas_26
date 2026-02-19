@@ -14,7 +14,7 @@ It covers:
 from __future__ import annotations
 from typing import Dict, List, Optional
 
-from .models import Hotel
+from .models import Customer, Hotel
 from .storage import JsonStore
 
 
@@ -50,9 +50,14 @@ class ReservationService:
         rows = [h.to_dict() for h in hotels]
         self.store.save(self.HOTELS, rows)
 
+    def _save_customers(self, customers: List[Customer]) -> None:
+        rows = [c.to_dict() for c in customers]
+        self.store.save(self.CUSTOMERS, rows)
+
     def _load_customers(self) -> List[Dict]:
         """Return the list of customers from the store."""
-        return self.store.load(self.CUSTOMERS)
+        rows: List[Dict] = self.store.load(self.CUSTOMERS)
+        return [Customer.from_dict(r) for r in rows]
 
     def _load_reservations(self) -> List[Dict]:
         """Return the list of reservations from the store."""
@@ -113,22 +118,23 @@ class ReservationService:
         if not customer_id or not name or "@" not in email:
             raise ValueError("Invalid customer data")
         customers = self._load_customers()
-        if any(c["id"] == customer_id for c in customers):
+        if any(c.id == customer_id for c in customers):
             raise ValueError(f"Customer {customer_id} already exists")
-        customers.append({"id": customer_id, "name": name, "email": email})
-        self.store.save(self.CUSTOMERS, customers)
+        customer = Customer(id=customer_id, name=name, email=email)
+        customers.append(customer)
+        self._save_customers(customers)
 
-    def get_customer(self, customer_id: str) -> Optional[Dict]:
+    def get_customer(self, customer_id: str) -> Optional[Customer]:
         """Return the customer by id, or `None` if it does not exist.
 
         Args:
             customer_id: Unique customer identifier.
 
         Returns:
-            dict | None: The customer record if found, else None.
+            Customer | None: The customer record if found, else None.
         """
         customers = self._load_customers()
-        return next((c for c in customers if c["id"] == customer_id), None)
+        return next((c for c in customers if c.id == customer_id), None)
 
     def delete_customer(self, customer_id: str) -> None:
         """Delete a customer by id.
@@ -140,10 +146,10 @@ class ReservationService:
             ValueError: If the customer does not exist.
         """
         customers = self._load_customers()
-        new_customers = [c for c in customers if c["id"] != customer_id]
+        new_customers = [c for c in customers if c.id != customer_id]
         if len(new_customers) == len(customers):
             raise ValueError("Customer not found")
-        self.store.save(self.CUSTOMERS, new_customers)
+        self._save_customers(new_customers)
 
     def update_customer(self, customer_id: str, **fields) -> None:
         """Update fields on a customer record (e.g., `name`, `email`).
@@ -156,14 +162,20 @@ class ReservationService:
             ValueError: If the customer does not exist.
         """
         customers = self._load_customers()
-        found = False
-        for c in customers:
-            if c["id"] == customer_id:
-                c.update(fields)
-                found = True
-        if not found:
+        idx = next(
+            (i for i, c in enumerate(customers) if c.id == customer_id),
+            -1
+        )
+        if idx < 0:
             raise ValueError("Customer not found")
-        self.store.save(self.CUSTOMERS, customers)
+
+        current = customers[idx]
+        new_name = fields.get("name", current.name)
+        new_email = fields.get("email", current.email)
+        updated = Customer(id=current.id, name=new_name, email=new_email)
+
+        customers[idx] = updated
+        self._save_customers(customers)
 
     # -------- Reservations --------
     def create_reservation(
@@ -294,7 +306,7 @@ class ReservationService:
         Raises:
             ValueError: If the customer does not exist.
         """
-        c = self.get_customer(customer_id)
-        if c is None:
+        customer = self.get_customer(customer_id)
+        if customer is None:
             raise ValueError("Customer not found")
-        return f"Customer {c['id']}: {c['name']} <{c['email']}>"
+        return str(customer)

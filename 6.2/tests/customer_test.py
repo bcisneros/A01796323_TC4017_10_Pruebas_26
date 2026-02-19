@@ -96,8 +96,8 @@ class CustomerTest(unittest.TestCase):
 
         customer = self.svc.get_customer("C4")
         self.assertIsNotNone(customer)
-        self.assertEqual("Benja", customer["name"])
-        self.assertEqual("benja@test.com", customer["email"])
+        self.assertEqual("Benja", customer.name)
+        self.assertEqual("benja@test.com", customer.email)
 
     def test_get_customer_returns_none_for_unknown_id(self):
         self.assertIsNone(self.svc.get_customer("NOPE"))

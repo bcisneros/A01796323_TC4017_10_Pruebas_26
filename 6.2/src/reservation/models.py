@@ -57,6 +57,23 @@ class Customer:
     name: str
     email: str
 
+    @staticmethod
+    def from_dict(data: dict) -> "Customer":
+        """Create a Customer instance from a dictionary (store payload)."""
+        return Customer(
+            id=data["id"],
+            name=data["name"],
+            email=data["email"],
+        )
+
+    def to_dict(self) -> dict:
+        """Return the dictionary representation (for JSON persistence)."""
+        return asdict(self)
+
+    def __str__(self) -> str:
+        """Human-friendly one-liner used to display hotel information."""
+        return f"Customer {self.id}: {self.name} <{self.email}>"
+
 
 @dataclass(frozen=True)
 class Reservation:
