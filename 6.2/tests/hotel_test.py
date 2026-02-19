@@ -72,6 +72,20 @@ class HotelTest(unittest.TestCase):
         self.store.load.assert_not_called()
         self.store.save.assert_not_called()
 
+    def test_get_hotel_existing_id_returns_hotel_data(self):
+        data = [
+            {"id": "H1", "name": "First Hotel", "rooms": 1},
+            {"id": "H2", "name": "Second Hotel", "rooms": 3},
+            {"id": "H3", "name": "Third Hotel", "rooms": 9}
+        ]
+        self.store.load.return_value = data
+        hotel = self.svc.get_hotel("H2")
+
+        self.assertEqual(
+            {"id": "H2", "name": "Second Hotel", "rooms": 3},
+            hotel
+        )
+
     def test_get_hotel_returns_none_for_unknown_id(self):
         data = [{"id": "H2", "name": "Other", "rooms": 1}]
         self.store.load.return_value = data
