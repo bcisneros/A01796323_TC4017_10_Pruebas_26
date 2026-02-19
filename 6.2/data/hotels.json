@@ -1,0 +1,17 @@
+[
+  {
+    "id": "H100",
+    "name": "Hotel Centro",
+    "rooms": 5
+  },
+  {
+    "id": "H200",
+    "name": "Hotel Norte",
+    "rooms": 3
+  },
+  {
+    "id": "RIU",
+    "name": "Hotel RIU",
+    "rooms": 34
+  }
+]
