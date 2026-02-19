@@ -14,7 +14,7 @@ It covers:
 from __future__ import annotations
 from typing import Dict, List, Optional
 
-from .models import Customer, Hotel
+from .models import Customer, Hotel, Reservation
 from .storage import JsonStore
 
 
@@ -54,17 +54,19 @@ class ReservationService:
         rows = [c.to_dict() for c in customers]
         self.store.save(self.CUSTOMERS, rows)
 
-    def _load_customers(self) -> List[Dict]:
+    def _load_customers(self) -> List[Customer]:
         """Return the list of customers from the store."""
         rows: List[Dict] = self.store.load(self.CUSTOMERS)
         return [Customer.from_dict(r) for r in rows]
 
-    def _load_reservations(self) -> List[Dict]:
+    def _load_reservations(self) -> List[Reservation]:
         """Return the list of reservations from the store."""
-        return self.store.load(self.RESERVATIONS)
+        rows: List[Dict] = self.store.load(self.RESERVATIONS)
+        return [Reservation.from_dict(r) for r in rows]
 
-    def _save_reservations(self, rows: List[Dict]) -> None:
+    def _save_reservations(self, reservations: List[Reservation]) -> None:
         """Persist the given list of reservations to the store."""
+        rows = [r.to_dict() for r in reservations]
         self.store.save(self.RESERVATIONS, rows)
 
     # -------- Hotels --------
@@ -215,23 +217,19 @@ class ReservationService:
             raise ValueError("Invalid room number")
 
         reservations = self._load_reservations()
-        if any(r["id"] == reservation_id for r in reservations):
+        if any(r.id == reservation_id for r in reservations):
             raise ValueError("Reservation id already exists")
-
         if any(
-            r["hotel_id"] == hotel_id and r["room_number"] == room_number
+            r.hotel_id == hotel_id and r.room_number == int(room_number)
             for r in reservations
         ):
             raise ValueError("Room already taken")
 
-        reservations.append(
-            {
-                "id": reservation_id,
-                "hotel_id": hotel_id,
-                "customer_id": customer_id,
-                "room_number": room_number,
-            }
-        )
+        new_reservation = Reservation(id=reservation_id,
+                                      hotel_id=hotel_id,
+                                      customer_id=customer_id,
+                                      room_number=room_number)
+        reservations.append(new_reservation)
         self._save_reservations(reservations)
         return reservation_id
 
@@ -245,7 +243,7 @@ class ReservationService:
             ValueError: If the reservation does not exist.
         """
         reservations = self._load_reservations()
-        new_rows = [r for r in reservations if r["id"] != reservation_id]
+        new_rows = [r for r in reservations if r.id != reservation_id]
         if len(new_rows) == len(reservations):
             raise ValueError("Reservation not found")
         self._save_reservations(new_rows)

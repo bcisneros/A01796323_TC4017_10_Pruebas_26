@@ -58,14 +58,44 @@ class ReservationTest(unittest.TestCase):
             self.svc.create_reservation("R5", "H1", "C1", 3)  # rooms=2
 
     def test_reservation_id_duplicate_raises(self):
-        self.svc.create_reservation("R6", "H1", "C1", 1)
+        self.store, _ = self._store_with_maps(
+            hotels=[{"id": "H1", "name": "Hotel Azul", "rooms": 2}],
+            customers=[
+                {"id": "C1", "name": "Benja", "email": "b@example.com"},
+                {"id": "C2", "name": "Juan", "email": "j@example.com"}
+            ],
+            reservations=[
+                {
+                    "id": "R9",
+                    "hotel_id": "H1",
+                    "customer_id": "C1",
+                    "room_number": 1
+                }
+            ],
+        )
+        self.svc = ReservationService(self.store)
         with self.assertRaises(ValueError):
-            self.svc.create_reservation("R6", "H1", "C1", 2)
+            self.svc.create_reservation("R9", "H1", "C1", 2)
 
     def test_reservation_room_already_taken_raises(self):
-        self.svc.create_reservation("R7", "H1", "C1", 1)
+        self.store, _ = self._store_with_maps(
+            hotels=[{"id": "H1", "name": "Hotel Azul", "rooms": 2}],
+            customers=[
+                {"id": "C1", "name": "Benja", "email": "b@example.com"},
+                {"id": "C2", "name": "Juan", "email": "j@example.com"}
+            ],
+            reservations=[
+                {
+                    "id": "R9",
+                    "hotel_id": "H1",
+                    "customer_id": "C1",
+                    "room_number": 1
+                }
+            ],
+        )
+        self.svc = ReservationService(self.store)
         with self.assertRaises(ValueError):
-            self.svc.create_reservation("R8", "H1", "C1", 1)
+            self.svc.create_reservation("R10", "H1", "C2", 1)
 
     def test_cancel_reservation_ok(self):
         self.store, _ = self._store_with_maps(

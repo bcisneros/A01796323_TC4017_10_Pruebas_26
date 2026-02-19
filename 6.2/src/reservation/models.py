@@ -71,7 +71,7 @@ class Customer:
         return asdict(self)
 
     def __str__(self) -> str:
-        """Human-friendly one-liner used to display hotel information."""
+        """Human-friendly one-liner used to display customer information."""
         return f"Customer {self.id}: {self.name} <{self.email}>"
 
 
@@ -89,3 +89,17 @@ class Reservation:
     hotel_id: str
     customer_id: str
     room_number: int
+
+    @staticmethod
+    def from_dict(data: dict) -> "Reservation":
+        """Create a Reservation instance from a dictionary (store payload)."""
+        return Reservation(
+            id=data["id"],
+            hotel_id=data["hotel_id"],
+            customer_id=data["customer_id"],
+            room_number=data["room_number"]
+        )
+
+    def to_dict(self) -> dict:
+        """Return the dictionary representation (for JSON persistence)."""
+        return asdict(self)
