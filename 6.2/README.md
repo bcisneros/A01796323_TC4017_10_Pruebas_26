@@ -176,24 +176,71 @@ make lint
 
 #### Strategy
 
-- Service tests are pure unit tests with a catalog‑based mocked store (load returns by filename) and in‑memory persistence after save. This makes tests deterministic and independent of call order.
-- Storage tests (``store_test.py) validate the real filesystem behavior of JsonStore.
-- Test names are descriptive about its intention and keep small setup and test minimal behavior
-- TDD approach was taken to create some of the basic behavior and let the design emerge to facilitate refactoring to avoid repetition or reduce complexity.
+- **Service tests** are implemented as **pure unit tests**, fully isolated from the filesystem by using a **catalog‑based mocked store**.
+  `load()` returns values **based on the requested catalog filename** (e.g., `hotels.json`, `customers.json`, `reservations.json`), making the tests **independent of call order** and ensuring **deterministic** behavior.
+- **In‑memory persistence** is simulated in multi‑step scenarios (e.g., cancel → re‑reserve), updating the catalog map after each `save`. This allows the tests to reflect real state transitions without touching disk.
+- **Storage tests** (`store_test.py`) validate the actual filesystem behavior of `JsonStore`, including missing files, corrupted JSON, overwriting, and round‑trip serialization.
+- **Test names** clearly communicate intent and follow a **small‑scope / small‑setup** approach, testing only one behavior per case.
+- A **TDD approach** was followed for several components, letting the design emerge naturally as failing tests guided refactoring, removal of duplication, and simplification of logic.
+
+---
 
 #### Happy Paths
 
-- **Hotels**: create new hotels (new id), return one or multiple hotels, update hotel information, remove hotel and display hotel information
-- **Customers**: create valid customers, remove customers, return customers by id, update and display customer information
-- **Reservations**: make new reservations, cancel reservations
-- **Storage**: files can be created and write json content on them
+- **Hotels**
+  - Creating new hotels (unique IDs)
+  - Retrieving hotels by ID
+  - Updating hotel information
+  - Deleting hotels
+  - Displaying formatted hotel information
 
-#### Negative scenarios
+- **Customers**
+  - Creating valid customer records
+  - Retrieving customers by ID
+  - Updating customer information
+  - Deleting customers
+  - Displaying formatted customer information
 
-- **Hotels**: duplicate id, invalid rooms (≤0), empty id, empty name, update not found, invalid rooms on update, empty name on update.
-- **Customers**: duplicate id, invalid email (no @), delete not found, update not found
-- **Reservations**: hotel not found, customer not found, room out of range (low/high), duplicate reservation id, room already taken, cancel unknown.
-- **Storage**: missing file → []; corrupted JSON → logs + []; overwrite existing file.
+- **Reservations**
+  - Creating valid reservations (existing hotel, existing customer, available room)
+  - Canceling existing reservations
+  - Reusing a room after cancellation
+
+- **Storage**
+  - Saving JSON content to disk
+  - Successfully reading and round‑tripping content
+
+---
+
+#### Negative Scenarios
+
+- **Hotels**
+  - Duplicate hotel ID
+  - Invalid room count (≤ 0)
+  - Empty hotel ID
+  - Empty hotel name
+  - Updating non‑existent hotels
+  - Invalid rooms on update (≤ 0)
+  - Empty name on update
+
+- **Customers**
+  - Duplicate customer ID
+  - Invalid email (missing `@`)
+  - Deleting non‑existent customer
+  - Updating non‑existent customer
+
+- **Reservations**
+  - Hotel ID not found
+  - Customer ID not found
+  - Room number out of range (low/high)
+  - Duplicate reservation ID
+  - Attempt to reserve an already‑taken room
+  - Canceling a non‑existent reservation
+
+- **Storage**
+  - Missing JSON file → returns `[]`
+  - Corrupted JSON → logs error and returns `[]`
+  - Overwriting an existing file correctly replaces stale content
 
 ### Coverage Report
 
@@ -223,18 +270,28 @@ git log --oneline --decorate --graph --all
 
 ![Conventional Commits](./evidences/conventional_commits.png)
 
-> Note: I started using conventional commits just in this activity, so the history shows non conventional before that.
+> **Note**: Conventional Commits were adopted starting with this activity.
+> Earlier commits in the repository may not follow the Conventional Commit format, but all commits **from Activity 6.2** onward consistently use the specification, ensuring clear change tracking, improved readability, and better traceability for evaluators.
 
 ## 5) Conclusions
 
-- All functional and technical requirements are satisfied.
-- Tests are cleanly layered (service vs storage), deterministic, and include ample negative cases.
-- Pylint/Flake8 report zero issues (PEP‑8 compliance).
-- Coverage meets or exceeds the 85% rubric threshold; HTML report included.
-- Documentation and Makefile targets are provided to streamline evaluation.
+- All **functional** and **technical** requirements of the reservation system were - successfully implemented.
+- The test suite is **cleanly layered**, separating **pure service logic** (mocked - storage) from **true persistence behavior** (JsonStore tests).
+- This results in **deterministic**, **fast**, and **high‑signal** tests.
+- **Negative test cases** are comprehensive, covering invalid data, missing - resources, malformed JSON, duplicate identifiers, out‑of‑range conditions, and - more.
+- **Static analysis tools** (Pylint, Flake8) report **zero issues**, demonstrating full - PEP 8 compliance and clean code quality.
+- **Code coverage** meets or exceeds the rubric threshold of **85%**, with a detailed - HTML report included for verification.
+- **Documentation**, clear folder structure, and **Makefile commands** (`lint`, `test`, `cov`, `html`) streamline reproducibility and simplify instructor evaluation.
 
-### Lessons learned
+### 📘 Lessons Learned
 
-- Python Test Suite is easy to use and configure, but probably for more complex scenarios is required to use external libraries.
-- Small increments of tested functionality increases confidence about adding more complex logic as soon this is discovered.
-- Commit often and using conventional messages helps to keep a traceable log of events and is easier to rollback if a step is not the best way to do it.
+- **Python’s built‑in unittest framework is powerful and easy to adopt**, especially for structured scenarios.
+  For more complex mocking, fixtures, or parametrization, external libraries such as **pytest**, **pytest‑mock**, or **factory_boy** may further enhance flexibility.
+
+- **Incremental development guided by tests (TDD)** significantly increases confidence.
+  Implementing small, well‑tested behaviors early helps maintain quality and reduces the cost of adding more complex business logic later.
+
+- **Committing frequently and using Conventional Commits** proved highly valuable.
+  It improves traceability, provides a clear narrative of the project’s evolution, and makes it easy to revert or inspect changes if needed.
+
+- Designing tests to be **deterministic, isolated, and decoupled from I/O** leads to faster execution, higher reliability, and clearer understanding of system behavior.
