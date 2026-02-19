@@ -235,7 +235,9 @@ class ReservationService:
         if any(r.id == reservation_id for r in reservations):
             raise ValueError("Reservation id already exists")
         if any(
-            r.hotel_id == hotel_id and r.room_number == int(room_number)
+            r.hotel_id == hotel_id
+            and r.room_number == int(room_number)
+            and r.status == "active"
             for r in reservations
         ):
             raise ValueError("Room already taken")

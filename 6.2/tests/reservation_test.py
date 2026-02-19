@@ -42,6 +42,48 @@ class ReservationTest(unittest.TestCase):
         ]
         self.assertEqual(res, args[1])
 
+    def test_create_reservation_reuse_cancelled_hotel_room(self):
+        self.store, _ = self._store_with_maps(
+            hotels=[{"id": "H1", "name": "Hotel Azul", "rooms": 2}],
+            customers=[
+                {"id": "C1", "name": "Benja", "email": "b@example.com"},
+                {"id": "C2", "name": "Juan", "email": "j@example.com"}
+            ],
+            reservations=[
+                {
+                    "id": "R1",
+                    "hotel_id": "H1",
+                    "customer_id": "C1",
+                    "room_number": 1,
+                    "status": "cancelled"
+                }
+            ],
+        )
+        self.svc = ReservationService(self.store)
+        rid = self.svc.create_reservation("R2", "H1", "C1", room_number=1)
+        self.assertEqual("R2", rid)
+
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(ReservationService.RESERVATIONS, args[0])
+        res = [
+            {
+                "id": "R1",
+                "hotel_id": "H1",
+                "customer_id": "C1",
+                "room_number": 1,
+                "status": "cancelled"
+            },
+            {
+                "id": "R2",
+                "hotel_id": "H1",
+                "customer_id": "C1",
+                "room_number": 1,
+                "status": "active"
+            }
+        ]
+        self.assertEqual(res, args[1])
+
     def test_reservation_hotel_not_found_raises(self):
         with self.assertRaises(ValueError):
             self.svc.create_reservation("R2", "H404", "C1", 1)
@@ -70,7 +112,8 @@ class ReservationTest(unittest.TestCase):
                     "id": "R9",
                     "hotel_id": "H1",
                     "customer_id": "C1",
-                    "room_number": 1
+                    "room_number": 1,
+                    "status": "active"
                 }
             ],
         )
@@ -90,7 +133,8 @@ class ReservationTest(unittest.TestCase):
                     "id": "R9",
                     "hotel_id": "H1",
                     "customer_id": "C1",
-                    "room_number": 1
+                    "room_number": 1,
+                    "status": "active"
                 }
             ],
         )
@@ -109,7 +153,8 @@ class ReservationTest(unittest.TestCase):
                     "id": "R9",
                     "hotel_id": "H1",
                     "customer_id": "C1",
-                    "room_number": 2
+                    "room_number": 2,
+                    "status": "active"
                 }
             ],
         )
