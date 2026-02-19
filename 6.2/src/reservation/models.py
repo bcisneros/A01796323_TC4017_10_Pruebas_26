@@ -84,6 +84,7 @@ class Reservation:
         hotel_id: Identifier of the hotel being reserved.
         customer_id: Identifier of the customer who made the reservation.
         room_number: Room number within the specified hotel.
+        status: Current status of the reservation (active, cancelled)
     """
     id: str
     hotel_id: str
