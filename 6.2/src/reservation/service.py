@@ -38,6 +38,21 @@ class HotelService:
         rows: List[Dict] = self.store.load(ReservationService.HOTELS)
         return [Hotel.from_dict(r) for r in rows]
 
+    def get_hotel(self, hotel_id: str) -> Optional[Hotel]:
+        """Return the hotel by id, or `None` if it does not exist.
+
+        Args:
+            hotel_id: Unique hotel identifier.
+
+        Returns:
+            dict | None: The hotel record if found, else None.
+        """
+        hotels = self.load_hotels()
+        for h in hotels:
+            if h.id == hotel_id:
+                return h
+        return None
+
     def save_hotels(self, hotels: List[Hotel]) -> None:
         """Stores hotels in storage"""
         rows = [h.to_dict() for h in hotels]
@@ -90,6 +105,38 @@ class HotelService:
         hotels[idx] = Hotel(id=current.id, name=new_name, rooms=new_rooms)
         self.save_hotels(hotels)
 
+    def delete_hotel(self, hotel_id: str) -> None:
+        """Delete an hotel by id.
+
+        Args:
+            hotel_id: Unique hotel identifier.
+
+        Raises:
+            ValueError: If the hotel does not exist.
+        """
+        hotels = self.load_hotels()
+        new_hotels = [h for h in hotels if h.id != hotel_id]
+        if len(new_hotels) == len(hotels):
+            raise ValueError("Hotel not found")
+        self.save_hotels(new_hotels)
+
+    def display_hotel_info(self, hotel_id: str) -> str:
+        """Return a human-friendly description of the hotel.
+
+        Args:
+            hotel_id: Unique hotel identifier.
+
+        Returns:
+            str: Formatted description (id, name, rooms).
+
+        Raises:
+            ValueError: If the hotel does not exist.
+        """
+        hotel = self.get_hotel(hotel_id)
+        if hotel is None:
+            raise ValueError("Hotel not found")
+        return str(hotel)
+
 
 class ReservationService:
     """Business operations for Hotels, Customers, and Reservations.
@@ -119,10 +166,6 @@ class ReservationService:
         self.hotel_service = HotelService(store)
 
     # -------- Internal helpers --------
-    def create_hotel(self, hotel_id: str, name: str, rooms: int) -> None:
-        """Creates an hotel delegating to hotel_service"""
-        return self.hotel_service.create_hotel(hotel_id, name, rooms)
-
     def _save_customers(self, customers: List[Customer]) -> None:
         rows = [c.to_dict() for c in customers]
         self.store.save(self.CUSTOMERS, rows)
@@ -144,19 +187,24 @@ class ReservationService:
 
     # -------- Hotels --------
     def get_hotel(self, hotel_id: str) -> Optional[Hotel]:
-        """Return the hotel by id, or `None` if it does not exist.
+        """Delegates to HotelService"""
+        return self.hotel_service.get_hotel(hotel_id)
 
-        Args:
-            hotel_id: Unique hotel identifier.
+    def delete_hotel(self, hotel_id: str) -> None:
+        """Delegates to HotelService"""
+        self.hotel_service.delete_hotel(hotel_id)
 
-        Returns:
-            dict | None: The hotel record if found, else None.
-        """
-        hotels = self.hotel_service.load_hotels()
-        for h in hotels:
-            if h.id == hotel_id:
-                return h
-        return None
+    def create_hotel(self, hotel_id: str, name: str, rooms: int) -> None:
+        """Creates an hotel delegating to hotel_service"""
+        return self.hotel_service.create_hotel(hotel_id, name, rooms)
+
+    def display_hotel_info(self, hotel_id: str) -> str:
+        """Delegates to HotelService"""
+        return self.hotel_service.display_hotel_info(hotel_id)
+
+    def update_hotel(self, hotel_id: str, **fields) -> None:
+        """Delegates to HotelService"""
+        return self.hotel_service.update_hotel(hotel_id, **fields)
 
     # -------- Customers --------
     def create_customer(self, customer_id: str, name: str, email: str) -> None:
@@ -205,21 +253,6 @@ class ReservationService:
         if len(new_customers) == len(customers):
             raise ValueError("Customer not found")
         self._save_customers(new_customers)
-
-    def delete_hotel(self, hotel_id: str) -> None:
-        """Delete an hotel by id.
-
-        Args:
-            hotel_id: Unique hotel identifier.
-
-        Raises:
-            ValueError: If the hotel does not exist.
-        """
-        hotels = self.hotel_service.load_hotels()
-        new_hotels = [h for h in hotels if h.id != hotel_id]
-        if len(new_hotels) == len(hotels):
-            raise ValueError("Hotel not found")
-        self.hotel_service.save_hotels(new_hotels)
 
     def update_customer(self, customer_id: str, **fields) -> None:
         """Update fields on a customer record (e.g., `name`, `email`).
@@ -326,35 +359,6 @@ class ReservationService:
 
         reservations[idx] = current.cancel()
         self._save_reservations(reservations)
-
-    def display_hotel_info(self, hotel_id: str) -> str:
-        """Return a human-friendly description of the hotel.
-
-        Args:
-            hotel_id: Unique hotel identifier.
-
-        Returns:
-            str: Formatted description (id, name, rooms).
-
-        Raises:
-            ValueError: If the hotel does not exist.
-        """
-        hotel = self.get_hotel(hotel_id)
-        if hotel is None:
-            raise ValueError("Hotel not found")
-        return str(hotel)
-
-    def update_hotel(self, hotel_id: str, **fields) -> None:
-        """Update hotel attributes (e.g., name, rooms).
-
-        Args:
-            hotel_id: Unique hotel identifier.
-            **fields: Fields to update (supported: name, rooms).
-
-        Raises:
-            ValueError: If the hotel does not exist or fields are invalid.
-        """
-        return self.hotel_service.update_hotel(hotel_id, **fields)
 
     def display_customer_info(self, customer_id: str) -> str:
         """Return a human-friendly description of the customer.
