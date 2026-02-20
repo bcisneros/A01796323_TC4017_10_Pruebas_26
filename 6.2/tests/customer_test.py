@@ -9,7 +9,7 @@ behaviors, using an isolated mock JSON store per test.
 import unittest
 from unittest.mock import MagicMock
 
-from reservation.service import ReservationService
+from reservation.service import CustomerService
 
 
 class CustomerTest(unittest.TestCase):
@@ -18,7 +18,7 @@ class CustomerTest(unittest.TestCase):
     def setUp(self):
         # Mocked store for every test
         self.store = MagicMock()
-        self.svc = ReservationService(self.store)
+        self.svc = CustomerService(self.store)
 
     # --- Create Customers ---
     # Happy path: create and read back
