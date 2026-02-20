@@ -7,12 +7,15 @@
 UI strings are Spanish for end-user friendliness; code/docstrings in English
 to keep linters happy and be consistent with earlier documentation.
 """
+# pylint: disable=missing-function-docstring
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional
+import json as _json
 
-from reservation.service import ReservationService
+from reservation.service import (
+    CustomerService, HotelService, ReservationService)
 from reservation.storage import JsonStore
 
 
@@ -90,12 +93,11 @@ def bootstrap_data(base: Path) -> None:
 
 
 def json_dumps_pretty(obj) -> str:
-    import json as _json
     return _json.dumps(obj, ensure_ascii=False, indent=2)
 
 
-def list_hotels(svc: ReservationService) -> None:
-    hotels = svc._load_hotels()  # pylint: disable=protected-access
+def list_hotels(svc: HotelService) -> None:
+    hotels = svc.load_hotels()
     if not hotels:
         print("(No hay hoteles)")
         return
@@ -106,7 +108,7 @@ def list_hotels(svc: ReservationService) -> None:
 
 
 def list_customers(svc: ReservationService) -> None:
-    customers = svc._load_customers()  # pylint: disable=protected-access
+    customers = svc.load_customers()
     if not customers:
         print("(No hay clientes)")
         return
@@ -121,16 +123,16 @@ def list_reservations(svc: ReservationService) -> None:
     if not rows:
         print("(No hay reservaciones)")
         return
-    
+
     print("\nID     | Hotel  | Cliente | Habitación | Status")
     print("-" * 47)
     for r in rows:
-        id = f"{r.id:<6}"
-        hotel_id = f"{r.hotel_id:<6}"
-        customer_id = f"{r.customer_id:<7}"
+        r_id = f"{r.id:<6}"
+        h_id = f"{r.hotel_id:<6}"
+        c_id = f"{r.customer_id:<7}"
         room_number = f"{r.room_number:<10}"
         status = f"{r.status}"
-        print(f"{id} | {hotel_id} | {customer_id} | {room_number} | {status}")
+        print(f"{r_id} | {h_id} | {c_id} | {room_number} | {status}")
 
 
 def menu_loop() -> None:
@@ -143,22 +145,32 @@ def menu_loop() -> None:
     bootstrap_data(data_dir)
 
     store = JsonStore(data_dir)
-    svc = ReservationService(store)
+    reservation_service = ReservationService(store)
+    hotel_service = HotelService(store)
+    customer_service = CustomerService(store)
 
     actions = {
-        '1': ('Crear hotel', action_create_hotel),
-        '2': ('Mostrar hotel', action_display_hotel),
-        '3': ('Modificar hotel', action_update_hotel),
-        '4': ('Eliminar hotel', action_delete_hotel),
-        '5': ('Listar hoteles', action_list_hotels),
-        '6': ('Crear cliente', action_create_customer),
-        '7': ('Mostrar cliente', action_display_customer),
-        '8': ('Modificar cliente', action_update_customer),
-        '9': ('Eliminar cliente', action_delete_customer),
-        '10': ('Listar clientes', action_list_customers),
-        '11': ('Crear reservación', action_create_reservation),
-        '12': ('Cancelar reservación', action_cancel_reservation),
-        '13': ('Listar reservaciones', action_list_reservations),
+        '1': ('Crear hotel', lambda: action_create_hotel(hotel_service)),
+        '2': ('Mostrar hotel', lambda: action_display_hotel(hotel_service)),
+        '3': ('Modificar hotel', lambda: action_update_hotel(hotel_service)),
+        '4': ('Eliminar hotel', lambda: action_delete_hotel(hotel_service)),
+        '5': ('Listar hoteles', lambda: action_list_hotels(hotel_service)),
+        '6': ('Crear cliente',
+              lambda: action_create_customer(customer_service)),
+        '7': ('Mostrar cliente',
+              lambda: action_display_customer(customer_service)),
+        '8': ('Modificar cliente',
+              lambda: action_update_customer(customer_service)),
+        '9': ('Eliminar cliente',
+              lambda: action_delete_customer(customer_service)),
+        '10': ('Listar clientes',
+               lambda: action_list_customers(customer_service)),
+        '11': ('Crear reservación',
+               lambda: action_create_reservation(reservation_service)),
+        '12': ('Cancelar reservación',
+               lambda: action_cancel_reservation(reservation_service)),
+        '13': ('Listar reservaciones',
+               lambda: action_list_reservations(reservation_service)),
         '0': ('Salir', None),
     }
 
@@ -180,10 +192,10 @@ def menu_loop() -> None:
             print("⚠️  Opción inválida.")
             continue
         try:
-            action[1](svc)
+            action[1]()
         except ValueError as exc:
             print(f"❌ Error: {exc}")
-        except Exception as exc:  # pragma: no cover (defensive)
+        except Exception as exc:  # pylint: disable=broad-exception-caught
             print(f"❌ Error inesperado: {exc}")
 
 
@@ -201,11 +213,11 @@ def action_display_hotel(svc: ReservationService) -> None:
     # Prefer service formatting if available; else compose from dict
     try:
         summary = svc.display_hotel_info(hotel_id)
-    except AttributeError:
+    except AttributeError as exc:
         # Fallback if display_hotel_info wasn't implemented
         h = svc.get_hotel(hotel_id)
         if h is None:
-            raise ValueError("Hotel not found")
+            raise ValueError("Hotel not found") from exc
         summary = str(h)
     print(summary)
 
@@ -221,8 +233,8 @@ def action_update_hotel(svc: ReservationService) -> None:
     if rooms_raw:
         try:
             rooms_val = int(rooms_raw)
-        except ValueError:
-            raise ValueError("rooms debe ser entero")
+        except ValueError as exc:
+            raise ValueError("rooms debe ser entero") from exc
         fields['rooms'] = rooms_val
     if not fields:
         print("(Sin cambios)")
@@ -237,7 +249,7 @@ def action_delete_hotel(svc: ReservationService) -> None:
     print("✅ Hotel eliminado.")
 
 
-def action_list_hotels(svc: ReservationService) -> None:
+def action_list_hotels(svc: HotelService) -> None:
     list_hotels(svc)
 
 
@@ -253,10 +265,10 @@ def action_display_customer(svc: ReservationService) -> None:
     customer_id = _input_nonempty("Id del cliente: ")
     try:
         summary = svc.display_customer_info(customer_id)
-    except AttributeError:
+    except AttributeError as exc:
         c = svc.get_customer(customer_id)
         if c is None:
-            raise ValueError("Customer not found")
+            raise ValueError("Customer not found") from exc
         summary = str(c)
     print(summary)
 

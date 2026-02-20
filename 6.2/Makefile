@@ -4,8 +4,8 @@ SHELL := /bin/bash
 
 lint:
 	@echo "🔎 Linting with flake8 and pylint..."
-	flake8 src tests
-	pylint src/reservation tests
+	flake8 src tests scripts
+	pylint src/reservation tests scripts
 
 test:
 	@echo "🧪 Running unit tests with coverage..."
