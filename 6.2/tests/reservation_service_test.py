@@ -8,8 +8,10 @@ rules, and behavior when the underlying JSON file is malformed.
 # pylint: disable=missing-function-docstring
 import unittest
 from unittest.mock import MagicMock
-from reservation.service import (
-    CustomerService, ReservationService, HotelService)
+
+from reservation.customer_service import CustomerService
+from reservation.hotel_service import HotelService
+from reservation.reservation_service import ReservationService
 
 NOW = "2026-02-19T10:23:09-06:00"
 

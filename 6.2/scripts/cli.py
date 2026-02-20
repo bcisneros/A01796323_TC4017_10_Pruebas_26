@@ -14,8 +14,9 @@ from pathlib import Path
 from typing import Optional
 import json as _json
 
-from reservation.service import (
-    CustomerService, HotelService, ReservationService)
+from reservation.customer_service import CustomerService
+from reservation.hotel_service import HotelService
+from reservation.reservation_service import ReservationService
 from reservation.storage import JsonStore
 
 
