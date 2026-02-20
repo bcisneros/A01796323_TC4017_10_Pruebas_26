@@ -1,4 +1,4 @@
-"""Hotel tests for create/get flows and negative scenarios.
+"""Hotel Service tests for create/get flows and negative scenarios.
 
 Covers creation, retrieval, duplicate-id validation, invalid room counts,
 and robustness when the underlying hotels JSON file is malformed.
@@ -11,7 +11,7 @@ import copy
 import unittest
 from unittest.mock import MagicMock
 
-from reservation.service import HotelService
+from reservation.hotel_service import HotelService
 
 
 class HotelTest(unittest.TestCase):
