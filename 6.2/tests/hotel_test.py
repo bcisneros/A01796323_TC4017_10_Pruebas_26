@@ -11,7 +11,7 @@ import copy
 import unittest
 from unittest.mock import MagicMock
 
-from reservation.service import ReservationService
+from reservation.service import HotelService
 
 
 class HotelTest(unittest.TestCase):
@@ -20,7 +20,7 @@ class HotelTest(unittest.TestCase):
     def setUp(self):
         # Mocked store for every test
         self.store = MagicMock()
-        self.svc = ReservationService(self.store)
+        self.svc = HotelService(self.store)
 
     def test_create_hotel_writes_expected_row(self):
         # Arrange

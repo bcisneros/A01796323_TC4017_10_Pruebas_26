@@ -23,6 +23,9 @@ class HotelService:
     """
     Business operations for Hotels
     """
+
+    HOTELS = "hotels.json"
+
     def __init__(
             self,
             store: JsonStore) -> None:
@@ -35,7 +38,7 @@ class HotelService:
 
     def load_hotels(self) -> List[Hotel]:
         """Return the list of hotels from the store."""
-        rows: List[Dict] = self.store.load(ReservationService.HOTELS)
+        rows: List[Dict] = self.store.load(self.HOTELS)
         return [Hotel.from_dict(r) for r in rows]
 
     def get_hotel(self, hotel_id: str) -> Optional[Hotel]:
@@ -56,7 +59,7 @@ class HotelService:
     def save_hotels(self, hotels: List[Hotel]) -> None:
         """Stores hotels in storage"""
         rows = [h.to_dict() for h in hotels]
-        self.store.save(ReservationService.HOTELS, rows)
+        self.store.save(self.HOTELS, rows)
 
     def create_hotel(self, hotel_id: str, name: str, rooms: int) -> None:
         """Create a new hotel if `hotel_id` is unique and data is valid.
@@ -148,7 +151,6 @@ class ReservationService:
     - Prevent double occupancy for a given (hotel_id, room_number).
     """
 
-    HOTELS = "hotels.json"
     CUSTOMERS = "customers.json"
     RESERVATIONS = "reservations.json"
 

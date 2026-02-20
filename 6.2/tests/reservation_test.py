@@ -8,7 +8,7 @@ rules, and behavior when the underlying JSON file is malformed.
 # pylint: disable=missing-function-docstring
 import unittest
 from unittest.mock import MagicMock
-from reservation.service import ReservationService
+from reservation.service import ReservationService, HotelService
 
 NOW = "2026-02-19T10:23:09-06:00"
 
@@ -224,7 +224,7 @@ class ReservationTest(unittest.TestCase):
         store = MagicMock()
         # Respuestas por “catálogo” para load
         load_map = {
-            ReservationService.HOTELS: hotels or [],
+            HotelService.HOTELS: hotels or [],
             ReservationService.CUSTOMERS: customers or [],
             ReservationService.RESERVATIONS: reservations or [],
         }
