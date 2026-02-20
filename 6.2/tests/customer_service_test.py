@@ -9,7 +9,7 @@ behaviors, using an isolated mock JSON store per test.
 import unittest
 from unittest.mock import MagicMock
 
-from reservation.service import CustomerService
+from reservation.customer_service import CustomerService
 
 
 class CustomerTest(unittest.TestCase):
