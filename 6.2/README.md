@@ -41,12 +41,17 @@ An optional **CLI** (`scripts/cli.py`) provides a **Spanish** interactive menu t
 ## 2) Project Structure
 
 ```
+.
 ├── Makefile
 ├── README.md
 ├── data
 │   ├── customers.json
 │   ├── hotels.json
 │   └── reservations.json
+├── evidences
+│   ├── conventional_commits.png
+│   ├── coverage_report.png
+│   └── static_analysis.png
 ├── pyproject.toml
 ├── requirements.txt
 ├── scripts
@@ -55,15 +60,18 @@ An optional **CLI** (`scripts/cli.py`) provides a **Spanish** interactive menu t
 │   ├── __init__.py
 │   └── reservation
 │       ├── __init__.py
+│       ├── customer_service.py
+│       ├── hotel_service.py
 │       ├── models.py
-│       ├── service.py
+│       ├── reservation_service.py
 │       └── storage.py
+├── test.sh
 └── tests
     ├── __init__.py
-    ├── customer_test.py
-    ├── hotel_test.py
-    ├── reservation_test.py
-    └── store_test.py
+    ├── customer_service_test.py
+    ├── hotel_service_test.py
+    ├── reservation_service_test.py
+    └── storage_test.py
 ```
 
 ---
@@ -99,27 +107,23 @@ make cov
 🧪 Running unit tests with coverage...
 coverage erase
 coverage run -m unittest discover -s tests -p "*_test.py" -v
-test_create_customer_duplicate_id_raises (customer_test.CustomerTest.test_create_customer_duplicate_id_raises) ... ok
-test_create_customer_empty_id_raises (customer_test.CustomerTest.test_create_customer_empty_id_raises) ... ok
-...
-test_load_missing_file_returns_empty_list (store_test.StoreTest.test_load_missing_file_returns_empty_list) ... ok
-test_save_overwrites_existing_file (store_test.StoreTest.test_save_overwrites_existing_file) ... ok
-test_save_then_load_round_trip_ok (store_test.StoreTest.test_save_then_load_round_trip_ok) ... ok
-
+....
 ----------------------------------------------------------------------
-Ran 40 tests in 0.024s
+Ran 45 tests in 0.028s
 
 OK
 📈 Coverage (text report)
 coverage report -m --include="src/*"
-Name                          Stmts   Miss  Cover   Missing
------------------------------------------------------------
-src/reservation/__init__.py       0      0   100%
-src/reservation/service.py      110      0   100%
-src/reservation/storage.py       21      0   100%
------------------------------------------------------------
-TOTAL                           131      0   100%
-
+Name                                     Stmts   Miss  Cover   Missing
+----------------------------------------------------------------------
+src/reservation/__init__.py                  0      0   100%
+src/reservation/customer_service.py         48      0   100%
+src/reservation/hotel_service.py            54      0   100%
+src/reservation/models.py                   40      0   100%
+src/reservation/reservation_service.py      46      0   100%
+src/reservation/storage.py                  21      0   100%
+----------------------------------------------------------------------
+TOTAL                                      209      0   100%
 ```
 
 **Generate HTML Coverage Report**
@@ -129,7 +133,7 @@ make html
 ...
 
 ----------------------------------------------------------------------
-Ran 40 tests in 0.024s
+Ran 45 tests in 0.028s
 
 OK
 🌐 Generating HTML coverage...
@@ -182,7 +186,7 @@ make lint
 - **Service tests** are implemented as **pure unit tests**, fully isolated from the filesystem by using a **catalog‑based mocked store**.
   `load()` returns values **based on the requested catalog filename** (e.g., `hotels.json`, `customers.json`, `reservations.json`), making the tests **independent of call order** and ensuring **deterministic** behavior.
 - **In‑memory persistence** is simulated in multi‑step scenarios (e.g., cancel → re‑reserve), updating the catalog map after each `save`. This allows the tests to reflect real state transitions without touching disk.
-- **Storage tests** (`store_test.py`) validate the actual filesystem behavior of `JsonStore`, including missing files, corrupted JSON, overwriting, and round‑trip serialization.
+- **Storage tests** (`storage_test.py`) validate the actual filesystem behavior of `JsonStore`, including missing files, corrupted JSON, overwriting, and round‑trip serialization.
 - **Test names** clearly communicate intent and follow a **small‑scope / small‑setup** approach, testing only one behavior per case.
 - A **TDD approach** was followed for several components, letting the design emerge naturally as failing tests guided refactoring, removal of duplication, and simplification of logic.
 
