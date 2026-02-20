@@ -10,6 +10,12 @@ import unittest
 from unittest.mock import MagicMock
 from reservation.service import ReservationService
 
+NOW = "2026-02-19T10:23:09-06:00"
+
+
+def _fixed_now() -> str:
+    return NOW
+
 
 class ReservationTest(unittest.TestCase):
     """End-to-end reservation scenarios using a temporary JSON store."""
@@ -22,7 +28,7 @@ class ReservationTest(unittest.TestCase):
             ],
             reservations=[],
         )
-        self.svc = ReservationService(self.store)
+        self.svc = ReservationService(self.store, now=_fixed_now)
 
     def test_create_reservation_ok(self):
         rid = self.svc.create_reservation("R1", "H1", "C1", room_number=1)
@@ -37,7 +43,35 @@ class ReservationTest(unittest.TestCase):
                 "hotel_id": "H1",
                 "customer_id": "C1",
                 "room_number": 1,
-                "status": "active"
+                "status": "active",
+                "created_at": NOW
+            }
+        ]
+        self.assertEqual(res, args[1])
+
+    def test_create_reservation_with_current_date(self):
+        self.store, _ = self._store_with_maps(
+            hotels=[{"id": "H1", "name": "Hotel Azul", "rooms": 2}],
+            customers=[
+                {"id": "C1", "name": "Benja", "email": "b@example.com"},
+                {"id": "C2", "name": "Juan", "email": "j@example.com"}
+            ],
+            reservations=[],
+        )
+        self.svc = ReservationService(self.store, now=_fixed_now)
+        self.svc.create_reservation("R1", "H1", "C1", room_number=1)
+
+        self.store.save.assert_called_once()
+        args, _ = self.store.save.call_args
+        self.assertEqual(ReservationService.RESERVATIONS, args[0])
+        res = [
+            {
+                "id": "R1",
+                "hotel_id": "H1",
+                "customer_id": "C1",
+                "room_number": 1,
+                "status": "active",
+                "created_at": "2026-02-19T10:23:09-06:00"
             }
         ]
         self.assertEqual(res, args[1])
@@ -55,11 +89,12 @@ class ReservationTest(unittest.TestCase):
                     "hotel_id": "H1",
                     "customer_id": "C1",
                     "room_number": 1,
-                    "status": "cancelled"
+                    "status": "cancelled",
+                    "created_at": NOW
                 }
             ],
         )
-        self.svc = ReservationService(self.store)
+        self.svc = ReservationService(self.store, now=_fixed_now)
         rid = self.svc.create_reservation("R2", "H1", "C1", room_number=1)
         self.assertEqual("R2", rid)
 
@@ -72,14 +107,16 @@ class ReservationTest(unittest.TestCase):
                 "hotel_id": "H1",
                 "customer_id": "C1",
                 "room_number": 1,
-                "status": "cancelled"
+                "status": "cancelled",
+                "created_at": NOW
             },
             {
                 "id": "R2",
                 "hotel_id": "H1",
                 "customer_id": "C1",
                 "room_number": 1,
-                "status": "active"
+                "status": "active",
+                "created_at": NOW
             }
         ]
         self.assertEqual(res, args[1])
@@ -154,7 +191,8 @@ class ReservationTest(unittest.TestCase):
                     "hotel_id": "H1",
                     "customer_id": "C1",
                     "room_number": 2,
-                    "status": "active"
+                    "status": "active",
+                    "created_at": "2010-08-09T09:23:34-09:00"
                 }
             ],
         )
@@ -170,6 +208,7 @@ class ReservationTest(unittest.TestCase):
                     "hotel_id": "H1",
                     "customer_id": "C1",
                     "room_number": 2,
+                    "created_at": "2010-08-09T09:23:34-09:00",
                     "status": "cancelled"
                 }
             ],

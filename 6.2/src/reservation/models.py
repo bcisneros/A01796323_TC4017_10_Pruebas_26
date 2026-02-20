@@ -91,12 +91,14 @@ class Reservation:
     customer_id: str
     room_number: int
     status: str
+    created_at: str
 
     @staticmethod
     def from_dict(data: dict) -> "Reservation":
         """Create a Reservation instance from a dictionary (store payload)."""
         return Reservation(
             id=data["id"],
+            created_at=data.get("created_at"),
             hotel_id=data["hotel_id"],
             customer_id=data["customer_id"],
             room_number=data["room_number"],

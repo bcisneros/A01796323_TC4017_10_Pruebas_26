@@ -12,7 +12,8 @@ It covers:
 """
 
 from __future__ import annotations
-from typing import Dict, List, Optional
+from typing import Callable, Dict, List, Optional
+from datetime import datetime
 
 from .models import Customer, Hotel, Reservation
 from .storage import JsonStore
@@ -32,13 +33,17 @@ class ReservationService:
     CUSTOMERS = "customers.json"
     RESERVATIONS = "reservations.json"
 
-    def __init__(self, store: JsonStore) -> None:
+    def __init__(
+            self,
+            store: JsonStore,
+            now: Optional[Callable[[], str]] = None) -> None:
         """Initialize the service with a `JsonStore` instance.
 
         Args:
             store: JSON store used to persist lists of dictionaries.
         """
         self.store = store
+        self.now = now or (lambda: datetime.now().astimezone().isoformat())
 
     # -------- Internal helpers --------
     def _load_hotels(self) -> List[Hotel]:
@@ -243,6 +248,7 @@ class ReservationService:
             raise ValueError("Room already taken")
 
         new_reservation = Reservation(id=reservation_id,
+                                      created_at=self.now(),
                                       hotel_id=hotel_id,
                                       customer_id=customer_id,
                                       room_number=room_number,
